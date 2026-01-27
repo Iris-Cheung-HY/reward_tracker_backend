@@ -15,6 +15,10 @@ public class PostService {
         this.postRepository = postRepository;
     }
 
+    public Post savePost(Post post) {
+        return postRepository.save(post);
+    }
+
     public List<Post> getAllPosts(String category) {
         if (category == null || category.isBlank()) {
             return postRepository.findAll();
@@ -29,10 +33,6 @@ public class PostService {
     public Post getPostById(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Post not found with id " + id));
-    }
-
-    public Post savePost(Post post) {
-        return postRepository.save(post);
     }
 
     public void deletePostById(Long id) {

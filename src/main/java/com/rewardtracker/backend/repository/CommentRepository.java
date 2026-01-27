@@ -10,6 +10,6 @@ import com.rewardtracker.backend.model.Comment;
 
 @Repository
 public interface CommentRepository extends JpaRepository <Comment, Long> {
-    List<Comment> findCommentByPostId (Long post_id);
+    List<Comment> findCommentByPostId (Long postId);
 
 }
