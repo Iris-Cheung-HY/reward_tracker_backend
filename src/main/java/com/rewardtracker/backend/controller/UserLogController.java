@@ -1,7 +1,7 @@
 package com.rewardtracker.backend.controller;
 
-import com.rewardtracker.backend.repository.UserRepository;
-import com.rewardtracker.backend.model.User;
+import com.rewardtracker.backend.repository.UserLogRepository;
+import com.rewardtracker.backend.model.UserLog;
 
 import java.util.List;
 
@@ -12,24 +12,24 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class UserController {
+public class UserLogController {
 
     @Autowired
-    private UserRepository userRepository;
+    private UserLogRepository userRepository;
 
     @PostMapping("/user")
-    User newUser(@RequestBody User newUser) {
+    UserLog newUser(@RequestBody UserLog newUser) {
         
         return userRepository.save(newUser);
 
     }
 
     @GetMapping("/users")
-    List<User> getAllUsers() {
+    List<UserLog> getAllUsers() {
         return userRepository.findAll();
     }
 
-    
+
 
 
 }

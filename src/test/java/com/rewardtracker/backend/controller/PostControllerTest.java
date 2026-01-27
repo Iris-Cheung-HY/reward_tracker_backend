@@ -1,16 +1,26 @@
 package com.rewardtracker.backend.controller;
 
+import com.rewardtracker.backend.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
-@AutoConfigureMockMvc
-
+@SpringBootTest
 
 public class PostControllerTest {
 
+
+    @Autowired
+    private PostRepository postRepository;
+
     @BeforeEach
-    return PostRepository.deleteAll()
-    
+    void setUp() {
+        postRepository.deleteAll();
+    }
 
-
+    @Test
+    void contextLoads() {
+        assert postRepository != null;
+    }
 }
