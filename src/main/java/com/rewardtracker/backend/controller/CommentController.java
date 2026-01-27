@@ -3,12 +3,11 @@ package com.rewardtracker.backend.controller;
 import com.rewardtracker.backend.service.CommentService;
 import com.rewardtracker.backend.model.Comment;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
 
 @RestController
-@RequestMapping("/posts/id")
+@RequestMapping("/posts")
 public class CommentController {
 
     private final CommentService commentService;
@@ -18,14 +17,14 @@ public class CommentController {
     }
 
 
-    @PostMapping("/comment")
-    Comment newComment(@RequestBody Comment newComment) {
+    @PostMapping("/{postId}/comments")
+    Comment newComment(@RequestBody Comment newComment, @PathVariable Long postId) {
         return commentService.saveComment(newComment);
     }
 
-    @GetMapping("/comment")
-    List<Comment> getAllCommentByPostId (@RequestParam(required = true) Long post_id) {
-        return commentService.getAllCommentByPostId(post_id);
+    @GetMapping("/{postId}/comments")
+    public List<Comment> getAllCommentsByPostId(@PathVariable Long postId) {
+        return commentService.getAllCommentsByPostId(postId);
 
     }
 

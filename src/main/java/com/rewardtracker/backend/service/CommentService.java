@@ -15,7 +15,7 @@ public class CommentService {
         this.commentRepository = commentRepository;
     }
 
-    public List<Comment> getAllComments(Long post_id) {
+    public List<Comment> getAllCommentsByPostId(Long post_id) {
         return commentRepository.findCommentByPostId(post_id);
     }
 
