@@ -24,8 +24,14 @@ public class PostController {
     }
 
     @GetMapping
-    List<Post> getAllPosts(@RequestParam(required = true) String category){
+    List<Post> getAllPosts(@RequestParam(required = false) String category){
         return postService.getAllPosts(category);
+    }
+
+    @GetMapping("/featured")
+    public List<Post> getFeaturePosts() {
+        return postService.getFeaturedPosts();
+
     }
 
     @GetMapping("/{id}")
@@ -37,5 +43,7 @@ public class PostController {
     public void deletePostById(@PathVariable Long id) {
         postService.deletePostById(id);
     }
+
+    
 
 }
