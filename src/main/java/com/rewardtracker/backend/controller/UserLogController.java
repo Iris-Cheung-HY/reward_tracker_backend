@@ -1,35 +1,30 @@
 package com.rewardtracker.backend.controller;
 
-import com.rewardtracker.backend.repository.UserLogRepository;
+import com.rewardtracker.backend.service.UserLogService;
 import com.rewardtracker.backend.model.UserLog;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/users")
 public class UserLogController {
 
-    @Autowired
-    private UserLogRepository userRepository;
+    private final UserLogService userLogService;
 
-    @PostMapping("/user")
+    public UserLogController(UserLogService userLogService) {
+        this.userLogService = userLogService;
+    }
+
+    @PostMapping
     UserLog newUser(@RequestBody UserLog newUser) {
         
-        return userRepository.save(newUser);
+        return userLogService.saveUser(newUser);
 
     }
 
-    @GetMapping("/users")
-    List<UserLog> getAllUsers() {
-        return userRepository.findAll();
+    @DeleteMapping("/{id}")
+    public void deleteUserById(@PathVariable Long id) {
+        userLogService.deleteUserById(id);
     }
-
-
-
 
 }
