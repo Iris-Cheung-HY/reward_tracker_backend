@@ -55,7 +55,7 @@ public class Post {
         return body;
     }
 
-    public Boolean getisFeatured() {
+    public Boolean getIsFeatured() {
         return isFeatured;
     }
 
