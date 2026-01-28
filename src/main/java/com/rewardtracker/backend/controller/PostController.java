@@ -31,23 +31,23 @@ public class PostController {
     @GetMapping("/travel-preview")
     public Page<Post> getTravelPreview() {
         Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
-        return postService.findByCategoryOrderByCreatedAtDesc("Travel", pageable);
+        return postService.getCatPosts("Travel", pageable);
     }
 
     @GetMapping("/creditcard-preview")
     public Page<Post> getCreditCardPreview() {
         Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
-        return postService.findByCategoryOrderByCreatedAtDesc("Credit Card", pageable);
+        return postService.getCatPosts("Credit Card", pageable);
     }
 
     @GetMapping("/travel")
         public List<Post> getAllTravel() {
-        return postService.findByCategoryOrderByCreatedAtDesc("Travel");
+        return postService.getAllPosts("Travel");
     }
 
     @GetMapping("/creditcard")
         public List<Post> getAllCreditCard() {
-        return postService.findByCategoryOrderByCreatedAtDesc("Credit Card");
+        return postService.getAllPosts("Credit Card");
     }
 
 
