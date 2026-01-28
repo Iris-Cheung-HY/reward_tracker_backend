@@ -2,7 +2,10 @@ package com.rewardtracker.backend.service;
 
 import com.rewardtracker.backend.model.Post;
 import com.rewardtracker.backend.repository.PostRepository;
+
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -23,11 +26,15 @@ public class PostService {
         if (category == null || category.isBlank()) {
             return postRepository.findAll();
         }
-        return postRepository.findByCategory(category);
+        return postRepository.findByCategoryOrderByCreatedAtDesc(category);
     }
 
-    public List<Post> getFeaturedPosts() {
-        return postRepository.findByIsFeaturedTrue();
+    public Page<Post> getCatPosts(String category, Pageable pageable) {
+        return postRepository.findByCategoryOrderByCreatedAtDesc(category, pageable);
+    }
+
+    public Page <Post> getFeaturedPosts(Pageable pageable) {
+        return postRepository.findByIsFeaturedTrue(pageable);
     }
 
     public Post getPostById(Long id) {

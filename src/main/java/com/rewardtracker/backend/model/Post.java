@@ -22,6 +22,7 @@ public class Post {
 
     private String body;
 
+    
     private Boolean isFeatured;
 
     private String imageUrl;

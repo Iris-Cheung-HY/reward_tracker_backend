@@ -2,6 +2,10 @@ package com.rewardtracker.backend.controller;
 
 import com.rewardtracker.backend.service.PostService;
 import com.rewardtracker.backend.model.Post;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort; 
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,14 +28,33 @@ public class PostController {
 
     }
 
-    @GetMapping
-    List<Post> getAllPosts(@RequestParam(required = false) String category){
-        return postService.getAllPosts(category);
+    @GetMapping("/travel-preview")
+    public Page<Post> getTravelPreview() {
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
+        return postService.findByCategoryOrderByCreatedAtDesc("Travel", pageable);
     }
 
+    @GetMapping("/creditcard-preview")
+    public Page<Post> getCreditCardPreview() {
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
+        return postService.findByCategoryOrderByCreatedAtDesc("Credit Card", pageable);
+    }
+
+    @GetMapping("/travel")
+        public List<Post> getAllTravel() {
+        return postService.findByCategoryOrderByCreatedAtDesc("Travel");
+    }
+
+    @GetMapping("/creditcard")
+        public List<Post> getAllCreditCard() {
+        return postService.findByCategoryOrderByCreatedAtDesc("Credit Card");
+    }
+
+
     @GetMapping("/featured")
-    public List<Post> getFeaturePosts() {
-        return postService.getFeaturedPosts();
+    public Page <Post> getFeaturePosts() {
+        Pageable pageable = PageRequest.of(0,3, Sort.by("createdAt").descending());
+        return postService.getFeaturedPosts(pageable);
 
     }
 
