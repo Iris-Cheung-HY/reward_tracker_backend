@@ -2,7 +2,11 @@ package com.rewardtracker.backend.service;
 
 import com.rewardtracker.backend.model.UserLog;
 import com.rewardtracker.backend.repository.UserLogRepository;
+
+import java.util.List;
+
 import org.springframework.stereotype.Service;
+
 
 
 @Service
@@ -23,7 +27,8 @@ public class UserLogService {
         userLogRepository.deleteById(id);
     }
 
-
-
-
+    
+    public List<UserLog> getAllUsers() {
+        return userLogRepository.findAll();
+    }
 }

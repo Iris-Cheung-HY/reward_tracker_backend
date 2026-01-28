@@ -5,6 +5,8 @@ import com.rewardtracker.backend.model.UserLog;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/users")
 public class UserLogController {
@@ -20,6 +22,11 @@ public class UserLogController {
         
         return userLogService.saveUser(newUser);
 
+    }
+
+    @GetMapping
+    List<UserLog> getAllUsers() {
+        return userLogService.getAllUsers();
     }
 
     @DeleteMapping("/{id}")
