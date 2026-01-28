@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/posts")
 public class PostController {
@@ -34,6 +35,7 @@ public class PostController {
 
     }
 
+    // Why need this one
     @GetMapping("/{id}")
     public Post getPostById(@PathVariable Long id) {
         return postService.getPostById(id);
@@ -44,6 +46,6 @@ public class PostController {
         postService.deletePostById(id);
     }
 
-    
+
 
 }
