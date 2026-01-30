@@ -4,6 +4,7 @@ import com.rewardtracker.backend.model.UserLog;
 import com.rewardtracker.backend.repository.UserLogRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -31,4 +32,9 @@ public class UserLogService {
     public List<UserLog> getAllUsers() {
         return userLogRepository.findAll();
     }
+
+    public Optional<UserLog> findByUsername(String username) {
+        return userLogRepository.findByUsername(username);
+    }
+
 }
