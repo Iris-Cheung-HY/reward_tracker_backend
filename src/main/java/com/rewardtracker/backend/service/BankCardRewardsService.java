@@ -13,9 +13,13 @@ public class BankCardRewardsService {
     private final BankCardRewardsRepository bankCardRewardsRepository;
     private final TransactionRecordsRepository transactionRecordsRepository;
 
-    public BankCardRewardsService(BankCardRewardsRepository bankCardRewardsRepository, TransactionRecordsRepository transactionRecordRepository) {
+    public BankCardRewardsService(BankCardRewardsRepository bankCardRewardsRepository, TransactionRecordsRepository transactionRecordsRepository) {
         this.bankCardRewardsRepository = bankCardRewardsRepository;
         this.transactionRecordsRepository = transactionRecordsRepository;
+    }
+
+    public List<RewardsDTO> getUserRewards (Long userId) {
+        return List.of();
     }
 
     private List<RewardsDTO> calculateCardRewards(UserCreditCard card) {
@@ -46,6 +50,7 @@ public class BankCardRewardsService {
         dto.setNextDueDate(today.plusMonths(1));
         return dto;
     }
+
 
     public List<BankCardRewards> getAllCardRewards() {
         return bankCardRewardsRepository.findAll();
