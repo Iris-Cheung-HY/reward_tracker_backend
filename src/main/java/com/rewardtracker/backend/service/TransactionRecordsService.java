@@ -17,7 +17,7 @@ public class TransactionRecordsService {
     }
 
     public TransactionRecords saveTransactionRecords(TransactionRecords transactionRecords) {
-    TransactionRecords saved = transactionRecordsRepository.save(transactionRecords);
+        return transactionRecordsRepository.save(transactionRecords);
     }
 
 
