@@ -11,14 +11,11 @@ import java.util.stream.Collectors;
 @Service
 public class BankCardRewardsService {
     private final BankCardRewardsRepository bankCardRewardsRepository;
-    private final UserCreditCardRepository userCreditCardRepository;
-    private final TransactionRecordsRepository transactionRecordsRepository; 
+    private final TransactionRecordsRepository transactionRecordsRepository;
 
-    public BankCardRewardsService(
-            BankCardRewardsRepository bankCardRewardsRepository,
-            UserCreditCardRepository userCreditCardRepository) {
+    public BankCardRewardsService(BankCardRewardsRepository bankCardRewardsRepository, TransactionRecordsRepository transactionRecordRepository) {
         this.bankCardRewardsRepository = bankCardRewardsRepository;
-        this.userCreditCardRepository = userCreditCardRepository;
+        this.transactionRecordsRepository = transactionRecordsRepository;
     }
 
     private List<RewardsDTO> calculateCardRewards(UserCreditCard card) {

@@ -28,12 +28,16 @@ public class UserLogService {
         userLogRepository.deleteById(id);
     }
 
+    public Optional <UserLog> getUserById(Long id) {
+        return userLogRepository.findById(id);
+    }
     
-    public List<UserLog> getAllUsers() {
+    public List <UserLog> getAllUsers() {
         return userLogRepository.findAll();
     }
 
-    public Optional<UserLog> findByUsername(String username) {
+
+    public Optional <UserLog> findByUsername(String username) {
         return userLogRepository.findByUsername(username);
     }
 

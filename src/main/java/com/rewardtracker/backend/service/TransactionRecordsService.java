@@ -16,18 +16,8 @@ public class TransactionRecordsService {
         this.transactionRecordsRepository = transactionRecordsRepository;
     }
 
-    public TransactionRecords saveTransactionRecords(TransactionRecords tx) {
-        return transactionRecordsRepository.save(tx);
-    }
-
-    public TransactionRecords saveTransactionRecords(TransactionRecords tx) {
-    TransactionRecords saved = transactionRecordsRepository.save(tx);
-    
-    if (saved.getUserCreditCard() != null && saved.getUserCreditCard().getUser() != null) {
-        Long userId = saved.getUserCreditCard().getUser().getId();
-    }
-    
-    return saved;
+    public TransactionRecords saveTransactionRecords(TransactionRecords transactionRecords) {
+    TransactionRecords saved = transactionRecordsRepository.save(transactionRecords);
     }
 
 
