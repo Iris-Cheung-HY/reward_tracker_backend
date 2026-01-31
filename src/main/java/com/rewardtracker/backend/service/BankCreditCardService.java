@@ -19,7 +19,7 @@ public class BankCreditCardService {
         return bankCreditCardRepository.save(bankCreditCard);
     }
 
-    public List<BankCreditCard> getAllCardRewards() {
+    public List<BankCreditCard> getAllCardBankCreditCards() {
         return bankCreditCardRepository.findAll();
     }
 

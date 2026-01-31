@@ -36,7 +36,6 @@ public class UserLogService {
         return userLogRepository.findAll();
     }
 
-
     public Optional <UserLog> findByUsername(String username) {
         return userLogRepository.findByUsername(username);
     }
