@@ -4,7 +4,7 @@ import com.rewardtracker.backend.service.BankCardRewardsService;
 import com.rewardtracker.backend.model.BankCardRewards;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "https://reward-tracker-frontend.vercel.app/")
 @RestController
 @RequestMapping("/bankrewards")
 

@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "https://reward-tracker-frontend.vercel.app/")
 @RestController
 @RequestMapping("/posts")
 public class CommentController {
