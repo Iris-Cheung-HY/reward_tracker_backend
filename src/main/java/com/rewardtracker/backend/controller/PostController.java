@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "https://reward-tracker-frontend.vercel.app/")
+@CrossOrigin(origins = "https://reward-tracker-frontend.vercel.app")
 @RestController
 @RequestMapping("/posts")
 public class PostController {

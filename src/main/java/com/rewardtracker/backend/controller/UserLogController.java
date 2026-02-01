@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = "https://reward-tracker-frontend.vercel.app/")
+@CrossOrigin(origins = "https://reward-tracker-frontend.vercel.app")
 @RestController
 @RequestMapping("/users")
 public class UserLogController {
@@ -46,7 +46,15 @@ public class UserLogController {
         
         return response;
     }
-
+    
+    @PostMapping("/check-username")
+    public Map<String, Boolean> checkUsername(@RequestBody Map<String, String> request) {
+        String username = request.get("username");
+        boolean isAvailable = !userLogService.findByUsername(username).isPresent();
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("available", isAvailable);
+        return response;
+    }
 
     @GetMapping
     List<UserLog> getAllUsers() {
