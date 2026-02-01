@@ -22,6 +22,8 @@ public class BankCreditCard {
 
     private String cardImage;
 
+    private String cardType;
+
     // Getter
     public Long getId() { 
         return id; 
@@ -43,6 +45,10 @@ public class BankCreditCard {
         return cardImage; 
     }
 
+    public String getCardType() {
+        return cardType;
+    }
+
     // Setter
     public void setId(Long id) { 
         this.id = id; 
@@ -62,6 +68,10 @@ public class BankCreditCard {
 
     public void setCardImage(String cardImage) { 
         this.cardImage = cardImage; 
+    }
+
+    public void setCardType(String cardType) {
+        this.cardType = cardType;
     }
 
 }
