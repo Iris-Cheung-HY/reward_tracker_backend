@@ -28,6 +28,9 @@ public class UserCreditCard {
     
     private Boolean isActive;
 
+    @Column(length = 4)
+    private String lastFourDigits;
+
     // Getter
     public Long getId() { 
         return id;
@@ -46,6 +49,10 @@ public class UserCreditCard {
 
     public Boolean getIsActive() { 
         return isActive; 
+    }
+
+    public String getLastFourDigits() {
+        return lastFourDigits;
     }
 
     // Setter
@@ -67,6 +74,10 @@ public class UserCreditCard {
 
     public void setIsActive(Boolean isActive) {
          this.isActive = isActive; 
+    }
+
+    public void setLastFourDigits(String lastFourDigits) {
+        this.lastFourDigits = lastFourDigits;
     }
 }
 
