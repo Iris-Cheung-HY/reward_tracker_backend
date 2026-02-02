@@ -25,7 +25,7 @@ public class BankCardRewardsController {
         return bankCardRewardsRepository.save(reward);
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public List<BankCardRewards> getAllRewards() {
         return bankCardRewardsService.getAllCardRewards();
     }

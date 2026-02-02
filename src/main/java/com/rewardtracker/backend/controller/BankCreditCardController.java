@@ -22,7 +22,7 @@ public class BankCreditCardController {
         return bankCreditCardService.saveBankCreditCard(bankCreditCard);
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public List<BankCreditCard> getAllBankCards() {
         return bankCreditCardService.getAllCardBankCreditCards();
     }

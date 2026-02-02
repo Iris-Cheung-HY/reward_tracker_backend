@@ -16,7 +16,7 @@ public class UserCreditCardController {
         this.userCreditCardService = userCreditCardService;
     }
 
-    @PostMapping("/add")
+    @PostMapping
     public UserCreditCard addUserCard(@RequestBody UserCreditCard userCreditCard) {
         return userCreditCardService.saveCreditCard(userCreditCard);
     }

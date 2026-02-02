@@ -17,7 +17,7 @@ public class TransactionRecordsController {
         this.transactionRecordsService = transactionRecordsService;
     }
 
-    @PostMapping("/add")
+    @PostMapping
     public TransactionRecords addTransaction(@RequestBody TransactionRecords record) {
         return transactionRecordsService.saveTransactionRecords(record);
     }
