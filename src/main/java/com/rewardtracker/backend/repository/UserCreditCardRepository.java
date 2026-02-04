@@ -11,8 +11,6 @@ import java.util.*;
 public interface UserCreditCardRepository extends JpaRepository<UserCreditCard, Long> {
     
     List<UserCreditCard> findByUserId(Long userId);
-    
-    List<UserCreditCard> findByUserIdAndIsActiveTrue(Long userId);
 
     Optional<UserCreditCard> findByUserIdAndLastFourDigits(Long userId, String lastFourDigits);
 

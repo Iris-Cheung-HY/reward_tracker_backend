@@ -25,8 +25,6 @@ public class UserCreditCard {
 
     private LocalDate openDate;
 
-    private boolean isActivate;
-
     @Column(length = 4)
     private String lastFourDigits;
 
@@ -44,10 +42,6 @@ public class UserCreditCard {
 
     public LocalDate getOpenDate() { 
         return openDate; 
-    }
-
-    public boolean getIsActivate() {
-        return isActivate;
     }
 
     public String getLastFourDigits() {
@@ -69,10 +63,6 @@ public class UserCreditCard {
 
     public void setOpenDate(LocalDate openDate) { 
         this.openDate = openDate; 
-    }
-
-    public void setIsActivate(Boolean isActivate){
-        this.isActivate = isActivate;
     }
 
     public void setLastFourDigits(String lastFourDigits) {
