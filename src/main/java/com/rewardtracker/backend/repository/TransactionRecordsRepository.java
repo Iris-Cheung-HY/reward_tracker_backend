@@ -14,7 +14,7 @@ public interface TransactionRecordsRepository extends JpaRepository <Transaction
     List<TransactionRecords> findByUserId(Long userId);
     List<TransactionRecords> findByUserCreditCardId(Long userCreditCardId);
 
-    @Query("SELECT SUM(tr.transactionRecord.amount) FROM TransactionRecords tr WHERE tr.user.id = :userId")
+    @Query("SELECT COALESCE(SUM(tr.amount), 0.0) FROM TransactionRecords tr WHERE tr.user.id = :userId")
     Double getTotalTransactionAmountByUserId(@Param("userId") Long userId);
 
 }

@@ -31,7 +31,7 @@ public class UserCreditCard {
     // Getter
     public Long getId() { 
         return id;
-     }
+    }
 
     public UserLog getUser() { 
         return user; 
