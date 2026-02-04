@@ -39,7 +39,7 @@ public class UserCreditCardController {
         String lastFourDigits = request.get("lastFourDigits");
         boolean isDuplicate = userCreditCardService.findByLastFourDigits(userId, lastFourDigits).isPresent();
         Map<String, Boolean> response = new HashMap<>();
-        response.put("available", !isDuplicate); 
+        response.put("isDuplicate", !isDuplicate); 
         return response;
     }
 
