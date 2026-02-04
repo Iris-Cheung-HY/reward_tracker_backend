@@ -16,7 +16,7 @@ public interface UserCreditCardRepository extends JpaRepository<UserCreditCard, 
 
     Optional<UserCreditCard> findByUserIdAndLastFourDigits(Long userId, String lastFourDigits);
 
-    @Query("SELECT SUM(ucc.bankCreditCard.annualFee) FROM UserCreditCard ucc WHERE ucc.user.id = :userId")
+    @Query("SELECT SUM(bc.annualFee) FROM UserCreditCard ucc JOIN ucc.bankCreditCard bc WHERE ucc.user.id = :userId")
     Double getTotalAnnualFeeByUserId(@Param("userId") Long userId);
 }
 
