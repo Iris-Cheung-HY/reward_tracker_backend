@@ -2,6 +2,8 @@ package com.rewardtracker.backend.repository;
 
 import com.rewardtracker.backend.model.TransactionRecords;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,5 +14,7 @@ public interface TransactionRecordsRepository extends JpaRepository <Transaction
     List<TransactionRecords> findByUserId(Long userId);
     List<TransactionRecords> findByUserCreditCardId(Long userCreditCardId);
 
+    @Query("SELECT SUM(tr.transactionRecord.amount) FROM TransactionRecords tr WHERE tr.user.id = :userId")
+    Double getTotalTransactionAmountByUserId(@Param("userId") Long userId);
 
 }

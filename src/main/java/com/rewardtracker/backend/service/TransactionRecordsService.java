@@ -28,4 +28,9 @@ public class TransactionRecordsService {
     public List<TransactionRecords> getCardTransactions(Long cardId) {
         return transactionRecordsRepository.findByUserCreditCardId(cardId);
     }
+
+    public Double calculateTotalTransactionAmount(Long userId) {
+    Double total = transactionRecordsRepository.getTotalTransactionAmountByUserId(userId);
+        return (total != null) ? total : 0.0;
+    }
 }

@@ -6,7 +6,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.*;
-import lombok.Data;
 import java.time.LocalDate;
 
 @Entity
@@ -25,8 +24,6 @@ public class UserCreditCard {
     private BankCreditCard bankCreditCard;
 
     private LocalDate openDate;
-    
-    private Boolean isActive;
 
     @Column(length = 4)
     private String lastFourDigits;
@@ -45,10 +42,6 @@ public class UserCreditCard {
 
     public LocalDate getOpenDate() { 
         return openDate; 
-    }
-
-    public Boolean getIsActive() { 
-        return isActive; 
     }
 
     public String getLastFourDigits() {
@@ -70,10 +63,6 @@ public class UserCreditCard {
 
     public void setOpenDate(LocalDate openDate) { 
         this.openDate = openDate; 
-    }
-
-    public void setIsActive(Boolean isActive) {
-         this.isActive = isActive; 
     }
 
     public void setLastFourDigits(String lastFourDigits) {

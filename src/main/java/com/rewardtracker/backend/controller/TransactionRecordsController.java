@@ -31,4 +31,10 @@ public class TransactionRecordsController {
     public List<TransactionRecords> getUserTransactions(@PathVariable Long userId) {
         return transactionRecordsService.getUserTransactions(userId);
     }
+
+    @GetMapping("/user/{userId}/total-transaction")
+    public Double getTotalTransactionFee(@PathVariable Long userId) {
+        return transactionRecordsService.calculateTotalTransactionAmount(userId);
+    }
+
 }
