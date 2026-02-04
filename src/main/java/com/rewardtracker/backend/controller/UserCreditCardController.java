@@ -16,11 +16,11 @@ public class UserCreditCardController {
         this.userCreditCardService = userCreditCardService;
     }
 
-    @PostMapping("/user/{userId")
+    @PostMapping("/user/{userId}")
     public UserCreditCard addUserCard(@RequestBody UserCreditCard userCreditCard) {
         return userCreditCardService.saveCreditCard(userCreditCard);
     }
-  
+
     @GetMapping("/user/{userId}")
     public List<UserCreditCard> getUserCards(@PathVariable Long userId) {
         return userCreditCardService.getAllCreditCards(userId);
