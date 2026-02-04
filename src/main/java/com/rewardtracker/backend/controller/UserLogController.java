@@ -3,11 +3,11 @@ package com.rewardtracker.backend.controller;
 import com.rewardtracker.backend.service.UserLogService;
 import com.rewardtracker.backend.model.UserLog;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 
 @CrossOrigin(origins = "https://reward-tracker-frontend.vercel.app")
 @RestController
@@ -28,24 +28,28 @@ public class UserLogController {
     }
 
     @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody Map<String, String> credentials) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
         String username = credentials.get("username");
         String password = credentials.get("password");
         
-        UserLog user = userLogService.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-        
+        Optional<UserLog> userOpt = userLogService.findByUsername(username);
+    
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(401).body("User not found");
+        }
+
+        UserLog user = userOpt.get();
         if (!user.getPassword().equals(password)) {
-            throw new RuntimeException("Wrong password");
+            return ResponseEntity.status(401).body("Wrong password");
         }
 
         Map<String, Object> response = new HashMap<>();
-        response.put("userId", user.getId());
+        response.put("id", user.getId()); 
         response.put("username", user.getUsername());
         response.put("token", "fake-jwt-for-demo");
         
-        return response;
-    }
+        return ResponseEntity.ok(response);
+}
     
     @PostMapping("/check-username")
     public Map<String, Boolean> checkUsername(@RequestBody Map<String, String> request) {
