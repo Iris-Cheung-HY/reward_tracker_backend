@@ -29,4 +29,9 @@ public class BankCardRewardsController {
     public List<BankCardRewards> getAllRewards() {
         return bankCardRewardsService.getAllCardRewards();
     }
+
+    @GetMapping("/categories")
+    public List<String> getAllCategories() {
+        return bankCardRewardsRepository.findAllDistinctMerchantTypes();
+    }
 }

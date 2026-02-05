@@ -23,7 +23,7 @@ public class TransactionRecords {
     @JoinColumn(name = "user_id")
     private UserLog user;
 
-    private String category;
+    private String merchantType;
     
     private Double amount; 
 
@@ -44,8 +44,8 @@ public class TransactionRecords {
         return user;
     }
 
-    public String getCategory() { 
-        return category; 
+    public String getMerchantType() { 
+        return merchantType; 
     }
 
     public Double getAmount() { 
@@ -73,8 +73,8 @@ public class TransactionRecords {
         this.user = user; 
     }
 
-    public void setCategory(String category) { 
-        this.category = category; 
+    public void setMerchantType(String merchantType) { 
+        this.merchantType = merchantType; 
     }
 
     public void setAmount(Double amount) { 

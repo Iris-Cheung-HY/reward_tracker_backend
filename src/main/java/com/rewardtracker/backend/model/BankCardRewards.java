@@ -18,9 +18,11 @@ public class BankCardRewards {
     @JoinColumn(name = "bank_credit_card_id")
     private BankCreditCard bankCreditCard;
 
+    private String merchantType;
+
     private String type;
 
-    private String merchant;
+    private Double rewardRate;
 
     private Double totalAmount;
 
@@ -49,8 +51,12 @@ public class BankCardRewards {
         return type; 
     }
 
-    public String getMerchant() { 
-        return merchant; 
+    public String getMerchantType() { 
+        return merchantType; 
+    }
+
+    public Double getRewardRate() {
+        return rewardRate;
     }
 
     public Double getTotalAmount() { 
@@ -94,8 +100,12 @@ public class BankCardRewards {
         this.type = type; 
     }
 
-    public void setMerchant(String merchant) { 
-        this.merchant = merchant; 
+    public void setMerchantType(String merchantType) { 
+        this.merchantType = merchantType; 
+    }
+
+    public void setRewardRate(Double rewardRate) {
+        this.rewardRate = rewardRate;
     }
 
     public void setTotalAmount(Double totalAmount) { 

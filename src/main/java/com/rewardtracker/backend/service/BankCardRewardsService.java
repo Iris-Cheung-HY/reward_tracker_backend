@@ -35,6 +35,8 @@ public class BankCardRewardsService {
             .collect(Collectors.toList());
     }
 
+    
+
     private RewardsDTO calculateSingleReward(BankCardRewards reward, Month openMonth, LocalDate today) {
         RewardsDTO dto = new RewardsDTO();
         dto.setMerchant(reward.getMerchant());

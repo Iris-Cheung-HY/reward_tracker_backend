@@ -4,7 +4,11 @@ import java.time.LocalDate;
 
 public class RewardsDTO {
 
-    private String merchant;
+    private String merchantType;
+
+    private String type;
+
+    private Double rewardRate;
 
     private Double totalAmount;
 
@@ -23,8 +27,16 @@ public class RewardsDTO {
     private Boolean eligible; 
 
     // Getter
-    public String getMerchant() { 
-        return merchant; 
+    public String getMerchantType() { 
+        return merchantType; 
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public Double getrewardRate() {
+        return rewardRate;
     }
 
     public Double getTotalAmount() { 
@@ -60,8 +72,16 @@ public class RewardsDTO {
     }
 
     // Setter
-    public void setMerchant(String merchant) { 
-        this.merchant = merchant; 
+    public void setMerchantType (String merchantType) { 
+        this.merchantType = merchantType; 
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public void setRewardRate (Double rewardRate) {
+        this.rewardRate = rewardRate;
     }
 
     public void setTotalAmount(Double totalAmount) { 
