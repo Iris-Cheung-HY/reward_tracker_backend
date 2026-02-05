@@ -5,6 +5,7 @@ import com.rewardtracker.backend.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,34 +24,32 @@ public class BankCardRewardsService {
     }
 
     private List<RewardsDTO> calculateCardRewards(UserCreditCard card) {
-        LocalDate openDate = card.getOpenDate();
+        Month openMonth = card.getOpenMonth();
         LocalDate today = LocalDate.now();
         
         List<BankCardRewards> rewards = bankCardRewardsRepository
             .findByBankCreditCard(card.getBankCreditCard());
         
         return rewards.stream()
-            .map(reward -> calculateSingleReward(reward, openDate, today))
+            .map(reward -> calculateSingleReward(reward, openMonth, today))
             .collect(Collectors.toList());
     }
 
-    private RewardsDTO calculateSingleReward(BankCardRewards reward, LocalDate openDate, LocalDate today) {
+    private RewardsDTO calculateSingleReward(BankCardRewards reward, Month openMonth, LocalDate today) {
         RewardsDTO dto = new RewardsDTO();
         dto.setMerchant(reward.getMerchant());
         dto.setTotalAmount(reward.getTotalAmount());
         
-        int totalPeriods = reward.getPeriods();  // 12
-        
         if ("calendar_year".equals(reward.getFrequency())) {
-            int startMonth = openDate.getMonthValue();
-            dto.setRemainingPeriods(13 - startMonth);  // Mar=3 → 10期
+            int startMonth = (openMonth != null) ? openMonth.getValue() : 1;
+            
+            dto.setRemainingPeriods(13 - startMonth);
             dto.setLostAmount(reward.getPerPeriodAmount() * (startMonth - 1));
         }
         
         dto.setNextDueDate(today.plusMonths(1));
         return dto;
     }
-
 
     public List<BankCardRewards> getAllCardRewards() {
         return bankCardRewardsRepository.findAll();

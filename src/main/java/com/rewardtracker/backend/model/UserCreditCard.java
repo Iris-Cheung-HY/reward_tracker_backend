@@ -62,7 +62,7 @@ public class UserCreditCard {
         this.bankCreditCard = bankCreditCard; 
     }
 
-    public void setopenMonth(Month openMonth) { 
+    public void setOpenMonth(Month openMonth) { 
         this.openMonth = openMonth; 
     }
 
