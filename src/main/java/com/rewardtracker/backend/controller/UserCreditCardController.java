@@ -1,9 +1,13 @@
 package com.rewardtracker.backend.controller;
 
-import com.rewardtracker.backend.service.UserCreditCardService;
-import com.rewardtracker.backend.model.UserCreditCard;
+import com.rewardtracker.backend.service.*;
+
+import com.rewardtracker.backend.model.*;
+
+
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Month;
 import java.util.*;
 
 @CrossOrigin(origins = "https://reward-tracker-frontend.vercel.app")
@@ -17,8 +21,17 @@ public class UserCreditCardController {
     }
 
     @PostMapping("/user/{userId}")
-    public UserCreditCard addUserCard(@PathVariable Long userId, @RequestBody UserCreditCard userCreditCard) {
-        return userCreditCardService.saveCreditCard(userCreditCard);
+    public UserCreditCard addUserCard(
+        @PathVariable Long userId, 
+        @RequestBody Map<String, Object> payload
+    ) {
+        UserCreditCard newCard = new UserCreditCard();
+        newCard.setLastFourDigits((String) payload.get("lastFourDigits"));
+        newCard.setOpenMonth(Month.valueOf((String) payload.get("openMonth")));
+        
+        Long bankCardId = Long.valueOf(payload.get("bankCardId").toString());
+        
+        return userCreditCardService.saveUserCardWithDetails(userId, bankCardId, newCard);
     }
 
     @GetMapping("/user/{userId}")
