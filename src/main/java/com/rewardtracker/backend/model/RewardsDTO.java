@@ -35,7 +35,7 @@ public class RewardsDTO {
         return type;
     }
 
-    public Double getrewardRate() {
+    public Double getRewardRate() {
         return rewardRate;
     }
 
