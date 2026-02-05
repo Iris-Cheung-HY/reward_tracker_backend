@@ -6,7 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.*;
-import java.time.LocalDate;
+import java.time.*;
 
 @Entity
 
@@ -23,7 +23,8 @@ public class UserCreditCard {
     @JoinColumn(name = "bank_credit_card_id")
     private BankCreditCard bankCreditCard;
 
-    private LocalDate openDate;
+    @Enumerated(EnumType.STRING)
+    private Month openMonth;
 
     @Column(length = 4)
     private String lastFourDigits;
@@ -40,8 +41,8 @@ public class UserCreditCard {
         return bankCreditCard; 
     }
 
-    public LocalDate getOpenDate() { 
-        return openDate; 
+    public Month getOpenMonth() { 
+        return openMonth; 
     }
 
     public String getLastFourDigits() {
@@ -61,8 +62,8 @@ public class UserCreditCard {
         this.bankCreditCard = bankCreditCard; 
     }
 
-    public void setOpenDate(LocalDate openDate) { 
-        this.openDate = openDate; 
+    public void setopenMonth(Month openMonth) { 
+        this.openMonth = openMonth; 
     }
 
     public void setLastFourDigits(String lastFourDigits) {
