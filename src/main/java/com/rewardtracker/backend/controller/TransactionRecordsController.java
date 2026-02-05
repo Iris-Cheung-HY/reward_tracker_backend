@@ -17,14 +17,18 @@ public class TransactionRecordsController {
         this.transactionRecordsService = transactionRecordsService;
     }
 
-    @PostMapping
-    public TransactionRecords addTransaction(@RequestBody TransactionRecords record) {
-        return transactionRecordsService.saveTransactionRecords(record);
+    @PostMapping("/user/{userId}/card/{cardId}")
+    public TransactionRecords addTransaction(
+        @PathVariable Long userId,
+        @PathVariable Long cardId,
+        @RequestBody TransactionRecords record
+    ) {
+        return transactionRecordsService.saveWithDetails(userId, cardId, record);
     }
 
-    @GetMapping("/card/{userCardId}")
-    public List<TransactionRecords> getCardTransactions(@PathVariable Long userCardId) {
-        return transactionRecordsService.getCardTransactions(userCardId);
+    @GetMapping("/user/{userId}/card/{cardId}")
+    public List<TransactionRecords> getCardTransactions(@PathVariable Long userId, @PathVariable Long cardId) {
+        return transactionRecordsService.getCardTransactions(userId, cardId);
     }
 
     @GetMapping("/user/{userId}")
