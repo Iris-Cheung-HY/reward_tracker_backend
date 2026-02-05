@@ -25,11 +25,25 @@ public class UserCreditCardController {
         @PathVariable Long userId, 
         @RequestBody Map<String, Object> payload
     ) {
+
+        Object openMonthObj = payload.get("openMonth");
+        if (openMonthObj == null) {
+            throw new IllegalArgumentException("Missing required field: openMonth");
+        }
+
         UserCreditCard newCard = new UserCreditCard();
-        newCard.setLastFourDigits((String) payload.get("lastFourDigits"));
-        newCard.setOpenMonth(Month.valueOf((String) payload.get("openMonth")));
+        newCard.setLastFourDigits(String.valueOf(payload.get("lastFourDigits")));
         
-        Long bankCardId = Long.valueOf(payload.get("bankCardId").toString());
+
+        String monthStr = openMonthObj.toString().toUpperCase().trim();
+        newCard.setOpenMonth(Month.valueOf(monthStr));
+        
+
+        Object bankCardIdObj = payload.get("bankCardId");
+        if (bankCardIdObj == null) {
+            throw new IllegalArgumentException("Missing required field: bankCardId");
+        }
+        Long bankCardId = Long.valueOf(bankCardIdObj.toString());
         
         return userCreditCardService.saveUserCardWithDetails(userId, bankCardId, newCard);
     }
