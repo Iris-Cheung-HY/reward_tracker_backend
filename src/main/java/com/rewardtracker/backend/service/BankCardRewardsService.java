@@ -28,18 +28,20 @@ public class BankCardRewardsService {
         LocalDate today = LocalDate.now();
         
         List<BankCardRewards> rewards = bankCardRewardsRepository
-            .findByBankCreditCard(card.getBankCreditCard());
+            .findByBankCreditCard_Id(card.getBankCreditCard().getId());
         
         return rewards.stream()
             .map(reward -> calculateSingleReward(reward, openMonth, today))
             .collect(Collectors.toList());
     }
 
-    
-
     private RewardsDTO calculateSingleReward(BankCardRewards reward, Month openMonth, LocalDate today) {
         RewardsDTO dto = new RewardsDTO();
-        dto.setMerchant(reward.getMerchant());
+        
+        dto.setMerchantType(reward.getMerchantType());
+        
+        dto.setRewardRate(reward.getRewardRate());
+        
         dto.setTotalAmount(reward.getTotalAmount());
         
         if ("calendar_year".equals(reward.getFrequency())) {
