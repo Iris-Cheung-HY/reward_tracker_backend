@@ -1,12 +1,9 @@
 package com.rewardtracker.backend.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.*;
 import java.time.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 
@@ -29,6 +26,9 @@ public class UserCreditCard {
     @Column(length = 4)
     private String lastFourDigits;
 
+    @Column(name = "is_activate", nullable = false)
+    private Boolean isActivate = true;
+
     // Getter
     public Long getId() { 
         return id;
@@ -47,6 +47,10 @@ public class UserCreditCard {
 
     public String getLastFourDigits() {
         return lastFourDigits;
+    }
+
+    public Boolean getIsActivate() {
+        return isActivate;
     }
 
     // Setter
@@ -68,6 +72,10 @@ public class UserCreditCard {
 
     public void setLastFourDigits(String lastFourDigits) {
         this.lastFourDigits = lastFourDigits;
+    }
+
+    public void setIsActivate(Boolean isActivate) {
+        this.isActivate = isActivate;
     }
 }
 
