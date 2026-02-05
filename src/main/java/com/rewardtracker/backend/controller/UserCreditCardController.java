@@ -17,7 +17,7 @@ public class UserCreditCardController {
     }
 
     @PostMapping("/user/{userId}")
-    public UserCreditCard addUserCard(@RequestBody UserCreditCard userCreditCard) {
+    public UserCreditCard addUserCard(@PathVariable Long userId, @RequestBody UserCreditCard userCreditCard) {
         return userCreditCardService.saveCreditCard(userCreditCard);
     }
 
@@ -39,7 +39,7 @@ public class UserCreditCardController {
         String lastFourDigits = request.get("lastFourDigits");
         boolean isDuplicate = userCreditCardService.findByLastFourDigits(userId, lastFourDigits).isPresent();
         Map<String, Boolean> response = new HashMap<>();
-        response.put("isDuplicate", !isDuplicate); 
+        response.put("isDuplicate", isDuplicate); 
         return response;
     }
 
