@@ -26,6 +26,8 @@ public class RewardsDTO {
 
     private Boolean eligible; 
 
+    private String conditions;
+
     // Getter
     public String getMerchantType() { 
         return merchantType; 
@@ -71,6 +73,10 @@ public class RewardsDTO {
         return eligible; 
     }
 
+    public String getConditions() {
+        return conditions;
+    }
+
     // Setter
     public void setMerchantType (String merchantType) { 
         this.merchantType = merchantType; 
@@ -114,6 +120,10 @@ public class RewardsDTO {
 
     public void setEligible(Boolean eligible) { 
         this.eligible = eligible; 
+    }
+
+    public void setConditions(String conditions) {
+        this.conditions = conditions;
     }
 
 }

@@ -40,6 +40,8 @@ public class BankCardRewards {
 
     private Double decemberAmount;
 
+    private String calculationType;
+
     // Getter
     public Long getId() { 
         return id;
@@ -93,6 +95,10 @@ public class BankCardRewards {
         return decemberAmount;
     }
 
+    public String getCalculationType() {
+        return calculationType;
+    }
+
     // Setter
     public void setId(Long id) { 
         this.id = id; 
@@ -144,5 +150,9 @@ public class BankCardRewards {
 
     public void setDecemberAmount(Double decemberAmount) {
         this.decemberAmount = decemberAmount;
+    }
+
+    public void setCalculationType(String calculationType) {
+        this.calculationType = calculationType;
     }
 }
