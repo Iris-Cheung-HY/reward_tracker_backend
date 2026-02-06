@@ -44,4 +44,8 @@ public class TransactionRecordsService {
         Double total = transactionRecordsRepository.getTotalTransactionAmountByUserId(userId);
         return (total != null) ? total : 0.0;
     }
+
+    public void deleteTransactionById(Long id) {
+        transactionRecordsRepository.deleteById(id);
+    }
 }

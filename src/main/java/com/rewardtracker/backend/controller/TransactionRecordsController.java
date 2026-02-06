@@ -41,4 +41,9 @@ public class TransactionRecordsController {
         return transactionRecordsService.calculateTotalTransactionAmount(userId);
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteTransactionById(@PathVariable Long id) {
+        transactionRecordsService.deleteTransactionById(id);
+    }
+
 }
