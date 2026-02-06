@@ -38,6 +38,8 @@ public class BankCardRewards {
 
     private String conditions;
 
+    private Double decemberAmount;
+
     // Getter
     public Long getId() { 
         return id;
@@ -87,6 +89,10 @@ public class BankCardRewards {
         return conditions; 
     }
 
+    public Double getDecemberAmount() {
+        return decemberAmount;
+    }
+
     // Setter
     public void setId(Long id) { 
         this.id = id; 
@@ -134,5 +140,9 @@ public class BankCardRewards {
 
     public void setConditions(String conditions) { 
         this.conditions = conditions; 
+    }
+
+    public void setDecemberAmount(Double decemberAmount) {
+        this.decemberAmount = decemberAmount;
     }
 }

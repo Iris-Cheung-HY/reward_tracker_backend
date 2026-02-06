@@ -3,6 +3,8 @@ package com.rewardtracker.backend.controller;
 import com.rewardtracker.backend.service.*;
 import com.rewardtracker.backend.model.*;
 import com.rewardtracker.backend.repository.*;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -13,11 +15,16 @@ import java.util.*;
 @RequestMapping("/bankrewards")
 public class BankCardRewardsController {
     private final BankCardRewardsService bankCardRewardsService;
-    private final BankCardRewardsRepository bankCardRewardsRepository; // 直接注入 Repository 方便快速開發
+    private final BankCardRewardsRepository bankCardRewardsRepository;
+    private final RewardsDTOService rewardsDTOService;
 
-    public BankCardRewardsController(BankCardRewardsService bankCardRewardsService, BankCardRewardsRepository bankCardRewardsRepository) {
+    public BankCardRewardsController(
+        BankCardRewardsService bankCardRewardsService, 
+        BankCardRewardsRepository bankCardRewardsRepository,
+        RewardsDTOService rewardsDTOService) {
         this.bankCardRewardsService = bankCardRewardsService;
         this.bankCardRewardsRepository = bankCardRewardsRepository;
+        this.rewardsDTOService = rewardsDTOService;
     }
 
     @PostMapping
@@ -33,5 +40,10 @@ public class BankCardRewardsController {
     @GetMapping("/categories")
     public List<String> getAllCategories() {
         return bankCardRewardsRepository.findAllDistinctMerchantTypes();
+    }
+
+    @GetMapping("/card/{id}/benefits")
+    public ResponseEntity<List<RewardsDTO>> getBenefits(@PathVariable Long id) {
+        return ResponseEntity.ok(rewardsDTOService.getCalculatedRewards(id));
     }
 }
