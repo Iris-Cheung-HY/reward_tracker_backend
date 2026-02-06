@@ -4,6 +4,7 @@ import com.rewardtracker.backend.service.*;
 
 import com.rewardtracker.backend.model.*;
 
+import org.apache.catalina.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -73,6 +74,11 @@ public class UserCreditCardController {
     @GetMapping("/user/{userId}")
     public List<UserCreditCard> getUserCards(@PathVariable Long userId) {
         return userCreditCardService.getAllCreditCards(userId);
+    }
+
+    @GetMapping("/{id}")
+    public Optional <UserCreditCard> getSpecifcCard(@PathVariable Long id) {
+        return userCreditCardService.getSpecificCard(id);
     }
 
     @DeleteMapping("/{id}")

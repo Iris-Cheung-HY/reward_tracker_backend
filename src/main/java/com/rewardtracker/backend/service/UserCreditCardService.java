@@ -3,6 +3,7 @@ package com.rewardtracker.backend.service;
 import com.rewardtracker.backend.model.*;
 import com.rewardtracker.backend.repository.*;
 
+import org.apache.catalina.User;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,6 +44,10 @@ public class UserCreditCardService {
         return userCreditCardRepository.findByUserId(userId);
     }
 
+    public Optional <UserCreditCard> getSpecificCard(Long id) {
+        return userCreditCardRepository.findById(id);
+    }
+    
     public void deleteCreditCardById (Long id) {
         userCreditCardRepository.deleteById(id);
     }
