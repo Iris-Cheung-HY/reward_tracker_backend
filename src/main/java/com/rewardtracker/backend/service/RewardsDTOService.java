@@ -87,8 +87,13 @@ public class RewardsDTOService {
                     target = (now.getMonth() == Month.DECEMBER && rule.getDecemberAmount() != null) 
                              ? rule.getDecemberAmount() : rule.getPerPeriodAmount();
                 } else if ("BI_ANNUALLY".equalsIgnoreCase(rule.getFrequency())) {
+                    if (rule.getPerPeriodAmount() != null) {
                     target = rule.getPerPeriodAmount();
+                } 
+                else if (rule.getTotalAmount() != null) {
+                    target = rule.getTotalAmount() / 2;
                 }
+            }
                 
                 dto.setTotalAmount(target);
                 dto.setUsedAmount(Math.min(effectiveSpent, target));
@@ -106,7 +111,7 @@ public class RewardsDTOService {
 
     private LocalDate calculateAnniversaryStartFromMonth(Month openMonth, LocalDate now) {
 
-        LocalDate thisYearAnniversary = LocalDate.of(now.getYear(), openMonth, 1);
+        LocalDate thisYearAnniversary = LocalDate.of(now.getYear(), openMonth.getValue(), 1);
         
         if (thisYearAnniversary.isAfter(now)) {
             return thisYearAnniversary.minusYears(1);
