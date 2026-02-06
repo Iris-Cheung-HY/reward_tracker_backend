@@ -2,7 +2,7 @@ package com.rewardtracker.backend.model;
 
 import jakarta.persistence.*;
 import java.time.*;
-
+import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
@@ -29,6 +29,10 @@ public class UserCreditCard {
     @Column(name = "is_activate", nullable = false)
     private Boolean isActivate = true;
 
+    @OneToMany(mappedBy = "userCreditCard", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore 
+    private List<TransactionRecords> transactions;
+
     // Getter
     public Long getId() { 
         return id;
@@ -51,6 +55,10 @@ public class UserCreditCard {
 
     public Boolean getIsActivate() {
         return isActivate;
+    }
+
+    public List<TransactionRecords> getTransactions() {
+        return transactions;
     }
 
     // Setter
@@ -76,6 +84,10 @@ public class UserCreditCard {
 
     public void setIsActivate(Boolean isActivate) {
         this.isActivate = isActivate;
+    }
+
+    public void setTransactions(List<TransactionRecords> transactions) {
+        this.transactions = transactions;
     }
 }
 
