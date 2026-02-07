@@ -42,6 +42,23 @@ public class BankCardRewards {
 
     private String calculationType;
 
+    public boolean isEligible(String transactionType) {
+        if (transactionType == null || this.merchantType == null) return false;
+        String tType = transactionType.toUpperCase();
+        String rType = this.merchantType.toUpperCase();
+
+        if (tType.equals(rType)) return true;
+        if (rType.equals("ALL")) return true;
+
+        if (tType.equals("CHASE_TRAVEL") && rType.equals("TRAVEL")) return true;
+        
+        if (tType.equals("CHASE_PORTAL_HOTEL")) {
+            return rType.equals("CHASE_TRAVEL") || rType.equals("TRAVEL") || rType.equals("HOTEL");
+        }
+
+        return false;
+    }
+
     // Getter
     public Long getId() { 
         return id;
@@ -98,6 +115,8 @@ public class BankCardRewards {
     public String getCalculationType() {
         return calculationType;
     }
+
+    
 
     // Setter
     public void setId(Long id) { 

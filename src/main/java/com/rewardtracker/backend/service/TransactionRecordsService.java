@@ -3,7 +3,8 @@ package com.rewardtracker.backend.service;
 import com.rewardtracker.backend.model.*;
 import com.rewardtracker.backend.repository.*;
 import org.springframework.stereotype.Service;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TransactionRecordsService {
@@ -21,14 +22,10 @@ public class TransactionRecordsService {
     }
 
     public TransactionRecords saveWithDetails(Long userId, Long cardId, TransactionRecords record) {
-        UserLog user = userLogRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-        UserCreditCard card = userCreditCardRepository.findById(cardId)
-            .orElseThrow(() -> new RuntimeException("Card not found"));
-
+        UserLog user = userLogRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        UserCreditCard card = userCreditCardRepository.findById(cardId).orElseThrow(() -> new RuntimeException("Card not found"));
         record.setUser(user);
         record.setUserCreditCard(card);
-        
         return transactionRecordsRepository.save(record);
     }
 
@@ -40,12 +37,33 @@ public class TransactionRecordsService {
         return transactionRecordsRepository.findByUserCreditCardId(cardId);
     }
 
-    public Double calculateTotalTransactionAmount(Long userId) {
-        Double total = transactionRecordsRepository.getTotalTransactionAmountByUserId(userId);
-        return (total != null) ? total : 0.0;
-    }
-
     public void deleteTransactionById(Long id) {
         transactionRecordsRepository.deleteById(id);
+    }
+
+    public Map<String, Double> calculateSpendingDistributions(Long cardId, List<String> specificMerchantTypes) {
+        List<TransactionRecords> transactions = transactionRecordsRepository.findByUserCreditCardId(cardId);
+        Map<String, Double> distributions = new HashMap<>();
+        double othersTotal = 0.0;
+        double allTotal = 0.0;
+
+        Set<String> specificTypes = specificMerchantTypes.stream()
+                .map(String::toUpperCase)
+                .collect(Collectors.toSet());
+
+        for (TransactionRecords t : transactions) {
+            double amount = (t.getAmount() != null) ? t.getAmount() : 0.0;
+            String mType = (t.getMerchantType() != null) ? t.getMerchantType().toUpperCase() : "UNKNOWN";
+            allTotal += amount;
+
+            if (specificTypes.contains(mType)) {
+                distributions.put(mType, distributions.getOrDefault(mType, 0.0) + amount);
+            } else if (!mType.equals("ALL")) {
+                othersTotal += amount;
+            }
+        }
+        distributions.put("ALL", allTotal);
+        distributions.put("OTHERS", othersTotal);
+        return distributions;
     }
 }
