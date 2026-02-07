@@ -66,4 +66,9 @@ public class TransactionRecordsService {
         distributions.put("OTHERS", othersTotal);
         return distributions;
     }
+
+    public Double calculateTotalTransactionAmount(Long userId) {
+        Double total = transactionRecordsRepository.sumAmountByUserId(userId);
+        return total != null ? total : 0.0;
+    }
 }
