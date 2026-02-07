@@ -30,7 +30,7 @@ public class PostService {
     }
 
     public Page<Post> getCatPosts(String category, Pageable pageable) {
-        return postRepository.findByCategoryOrderByCreatedAtDesc(category, pageable);
+        return postRepository.findByCategory(category, pageable);
     }
 
     public Page <Post> getFeaturedPosts(Pageable pageable) {

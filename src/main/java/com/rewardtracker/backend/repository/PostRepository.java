@@ -10,11 +10,10 @@ import java.util.List;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
-
     List<Post> findByCategoryOrderByCreatedAtDesc(String category);
   
-    Page <Post> findByCategoryOrderByCreatedAtDesc(String category, Pageable pageable);
+    Page<Post> findByCategory(String category, Pageable pageable);
 
-    Page <Post> findByIsFeaturedTrue(Pageable pageable);
+    Page<Post> findByIsFeaturedTrue(Pageable pageable);
 }
 

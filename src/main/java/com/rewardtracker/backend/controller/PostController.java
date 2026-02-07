@@ -1,7 +1,8 @@
 package com.rewardtracker.backend.controller;
 
-import com.rewardtracker.backend.service.PostService;
-import com.rewardtracker.backend.model.Post;
+import com.rewardtracker.backend.repository.*;
+import com.rewardtracker.backend.service.*;
+import com.rewardtracker.backend.model.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,17 +16,30 @@ import java.util.List;
 @RequestMapping("/posts")
 public class PostController {
 
+    private final UserLogRepository userLogRepository;
+
     private final PostService postService;
 
-    public PostController(PostService postService) {
+    public PostController(PostService postService, UserLogRepository userLogRepository) {
         this.postService = postService;
+        this.userLogRepository = userLogRepository;
     }
 
     @PostMapping
-    Post newPost(@RequestBody Post newPost) {
-        
-        return postService.savePost(newPost);
+    public Post newPost(@RequestBody java.util.Map<String, Object> payload) {
+        Post post = new Post();
+        post.setTitle((String) payload.get("title"));
+        post.setBody((String) payload.get("body"));
+        post.setCategory((String) payload.get("category"));
+        post.setImageUrl((String) payload.get("imageUrl"));
+        post.setIsFeatured(false); 
 
+        if (payload.get("user_id") != null) {
+            Long userId = Long.valueOf(payload.get("user_id").toString());
+            userLogRepository.findById(userId).ifPresent(post::setUser);
+        }
+
+        return postService.savePost(post);
     }
 
     @GetMapping("/travel-preview")
