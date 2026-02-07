@@ -24,7 +24,7 @@ public class RewardsDTOService {
         this.userCreditCardRepository = userCreditCardRepository;
     }
 
-    public List<RewardsDTO> getCalculatedRewards(Long userCardId) {
+public List<RewardsDTO> getCalculatedRewards(Long userCardId) {
         UserCreditCard userCard = userCreditCardRepository.findById(userCardId)
                 .orElseThrow(() -> new RuntimeException("Card not found"));
         
@@ -33,7 +33,6 @@ public class RewardsDTOService {
         List<TransactionRecords> transactions = transactionRecordsRepository.findByUserCreditCardId(userCardId);
 
         LocalDate now = LocalDate.now();
-
         Month openMonth = userCard.getOpenMonth() != null ? userCard.getOpenMonth() : now.getMonth();
 
         return rules.stream().map(rule -> {
@@ -43,27 +42,36 @@ public class RewardsDTOService {
             dto.setType(rule.getType());
             dto.setConditions(rule.getConditions());
 
-
             List<TransactionRecords> categoryTxns = transactions.stream()
                 .filter(t -> t.getMerchantType() != null && rule.getMerchantType() != null)
                 .filter(t -> t.getMerchantType().equalsIgnoreCase(rule.getMerchantType()))
                 .collect(Collectors.toList());
 
-
             double effectiveSpent;
             
-            if ("ANNIVERSARY".equalsIgnoreCase(rule.getCalculationType())) {
-
+            if ("TIME".equalsIgnoreCase(rule.getCalculationType())) {
+                LocalDate anniversaryDate = calculateAnniversaryStartFromMonth(openMonth, now);
+                effectiveSpent = (!now.isBefore(anniversaryDate)) ? 1.0 : 0.0;
+                
+            } else if ("calendar_year".equalsIgnoreCase(rule.getFrequency())) {
+                effectiveSpent = categoryTxns.stream()
+                    .filter(t -> t.getDate() != null && t.getDate().getYear() == now.getYear())
+                    .mapToDouble(TransactionRecords::getAmount).sum();
+                    
+            } else if ("anniversary_year".equalsIgnoreCase(rule.getFrequency()) || 
+                       "ANNIVERSARY".equalsIgnoreCase(rule.getCalculationType())) {
                 LocalDate anniversaryStart = calculateAnniversaryStartFromMonth(openMonth, now);
                 effectiveSpent = categoryTxns.stream()
                     .filter(t -> t.getDate() != null && !t.getDate().isBefore(anniversaryStart))
                     .mapToDouble(TransactionRecords::getAmount).sum();
+                    
             } else if ("MONTHLY".equalsIgnoreCase(rule.getFrequency())) {
                 effectiveSpent = categoryTxns.stream()
                     .filter(t -> t.getDate() != null && 
                                  t.getDate().getMonth() == now.getMonth() && 
                                  t.getDate().getYear() == now.getYear())
                     .mapToDouble(TransactionRecords::getAmount).sum();
+                    
             } else if ("BI_ANNUALLY".equalsIgnoreCase(rule.getFrequency())) {
                 int startMonth = now.getMonthValue() <= 6 ? 1 : 7;
                 effectiveSpent = categoryTxns.stream()
@@ -73,34 +81,32 @@ public class RewardsDTOService {
                         return (startMonth == 1) ? (m >= 1 && m <= 6) : (m >= 7 && m <= 12);
                     })
                     .mapToDouble(TransactionRecords::getAmount).sum();
-            } 
-            else {
+            } else {
                 effectiveSpent = categoryTxns.stream().mapToDouble(TransactionRecords::getAmount).sum();
             }
 
+            double target = (rule.getTotalAmount() != null) ? rule.getTotalAmount() : 0.0;
 
-
-            if (rule.getTotalAmount() != null && rule.getTotalAmount() > 0) {
-                double target = rule.getTotalAmount();
-
+            if (rule.getPerPeriodAmount() != null) {
                 if ("MONTHLY".equalsIgnoreCase(rule.getFrequency())) {
                     target = (now.getMonth() == Month.DECEMBER && rule.getDecemberAmount() != null) 
                              ? rule.getDecemberAmount() : rule.getPerPeriodAmount();
                 } else if ("BI_ANNUALLY".equalsIgnoreCase(rule.getFrequency())) {
-                    if (rule.getPerPeriodAmount() != null) {
                     target = rule.getPerPeriodAmount();
-                } 
-                else if (rule.getTotalAmount() != null) {
-                    target = rule.getTotalAmount() / 2;
                 }
+            } else if ("BI_ANNUALLY".equalsIgnoreCase(rule.getFrequency()) && rule.getTotalAmount() != null) {
+                target = rule.getTotalAmount() / 2;
             }
-                
+
+            dto.setUsedAmount(effectiveSpent);
+            
+            if (target > 0) {
                 dto.setTotalAmount(target);
-                dto.setUsedAmount(Math.min(effectiveSpent, target));
                 dto.setRemainingAmount(Math.max(0, target - effectiveSpent));
                 dto.setEligible(effectiveSpent >= target);
-            } else if (rule.getRewardRate() != null) {
-                dto.setUsedAmount(effectiveSpent * rule.getRewardRate());
+            } else {
+                dto.setTotalAmount(null);
+                dto.setRemainingAmount(0.0);
                 dto.setEligible(true);
             }
 
