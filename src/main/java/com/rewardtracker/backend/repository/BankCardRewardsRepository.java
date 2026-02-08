@@ -19,4 +19,7 @@ public interface BankCardRewardsRepository extends JpaRepository<BankCardRewards
 
     @Query("SELECT DISTINCT r.merchantType FROM BankCardRewards r WHERE r.bankCreditCard.id = :bankCardId")
     List<String> findDistinctMerchantTypesByBankCardId(@Param("bankCardId") Long bankCardId);
+
+    @Query("SELECT DISTINCT r.merchantType FROM BankCardRewards r WHERE r.calculationType = 'SPEND'")
+    List<String> findAllSpendMerchantTypes();
 }
