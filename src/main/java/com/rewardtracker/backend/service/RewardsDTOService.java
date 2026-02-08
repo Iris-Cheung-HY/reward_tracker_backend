@@ -44,10 +44,11 @@ public class RewardsDTOService {
             dto.setConditions(rule.getConditions());
 
             double target = calculateTarget(rule, now);
-            dto.setTotalAmount(target > 0 ? target : null);
 
             double used;
-            if ("TIME".equalsIgnoreCase(rule.getCalculationType())) {
+            boolean isStatusType = "TIME".equalsIgnoreCase(rule.getCalculationType());
+
+            if (isStatusType) {
                 LocalDate anniversaryDate = calculateAnniversaryStart(openMonth, now);
                 used = (!now.isBefore(anniversaryDate)) ? 1.0 : 0.0;
             } else {
@@ -63,7 +64,6 @@ public class RewardsDTOService {
                         .filter(t -> rule.isEligible(t.getMerchantType()))
                         .collect(Collectors.toList());
                 }
-
                 used = calculateWindowedAmount(eligibleTxns, rule, openMonth, now);
             }
 
@@ -72,12 +72,15 @@ public class RewardsDTOService {
             }
 
             dto.setUsedAmount(used);
-            if (target > 0) {
+
+            if (isStatusType || target <= 1.0) {
+                dto.setTotalAmount(null);
+                dto.setRemainingAmount(0.0);
+                dto.setEligible(used >= 1.0);
+            } else {
+                dto.setTotalAmount(target);
                 dto.setRemainingAmount(Math.max(0, target - used));
                 dto.setEligible(used >= target);
-            } else {
-                dto.setRemainingAmount(0.0);
-                dto.setEligible(true);
             }
 
             dto.setNextDueDate(calculateNextResetDate(rule, now));
