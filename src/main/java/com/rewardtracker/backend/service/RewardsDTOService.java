@@ -25,9 +25,7 @@ public class RewardsDTOService {
     }
 
     public List<RewardsDTO> getCalculatedRewards(Long userCardId) {
-        UserCreditCard userCard = userCreditCardRepository.findById(userCardId)
-                .orElseThrow(() -> new RuntimeException("Card not found"));
-        
+        UserCreditCard userCard = userCreditCardRepository.findById(userCardId).orElseThrow(() -> new RuntimeException("Card not found"));
         Long bankCreditCardId = userCard.getBankCreditCard().getId();
         List<BankCardRewards> rules = bankCardRewardsRepository.findByBankCreditCard_Id(bankCreditCardId);
         List<TransactionRecords> transactions = transactionRecordsRepository.findByUserCreditCardId(userCardId);
@@ -42,82 +40,61 @@ public class RewardsDTOService {
             dto.setType(rule.getType());
             dto.setConditions(rule.getConditions());
 
-            boolean allCat = "ALL".equalsIgnoreCase(rule.getMerchantType());
-
-            double effectiveSpent;
+            double effectiveValue;
             
             if ("TIME".equalsIgnoreCase(rule.getCalculationType())) {
                 LocalDate anniversaryDate = calculateAnniversaryStartFromMonth(openMonth, now);
-                effectiveSpent = (!now.isBefore(anniversaryDate)) ? 1.0 : 0.0;
+                effectiveValue = (!now.isBefore(anniversaryDate)) ? 1.0 : 0.0;
             } else {
                 List<TransactionRecords> eligibleTxns = transactions.stream()
-                    .filter(t -> t.getDate() != null)
-                    .filter(t -> allCat || (t.getMerchantType() != null && t.getMerchantType().equalsIgnoreCase(rule.getMerchantType())))
+                    .filter(t -> t.getDate() != null && rule.isEligible(t.getMerchantType()))
                     .collect(Collectors.toList());
 
-                if ("calendar_year".equalsIgnoreCase(rule.getFrequency())) {
-                    effectiveSpent = eligibleTxns.stream()
-                        .filter(t -> t.getDate().getYear() == now.getYear())
-                        .mapToDouble(TransactionRecords::getAmount).sum();         
-                } else if ("anniversary_year".equalsIgnoreCase(rule.getFrequency()) || 
-                           "ANNIVERSARY".equalsIgnoreCase(rule.getCalculationType())) {
-                    LocalDate anniversaryStart = calculateAnniversaryStartFromMonth(openMonth, now);
-                    effectiveSpent = eligibleTxns.stream()
-                        .filter(t -> !t.getDate().isBefore(anniversaryStart))
-                        .mapToDouble(TransactionRecords::getAmount).sum();
-                } else if ("MONTHLY".equalsIgnoreCase(rule.getFrequency())) {
-                    effectiveSpent = eligibleTxns.stream()
-                        .filter(t -> t.getDate().getMonth() == now.getMonth() && 
-                                     t.getDate().getYear() == now.getYear())
-                        .mapToDouble(TransactionRecords::getAmount).sum();
-                } else if ("BI_ANNUALLY".equalsIgnoreCase(rule.getFrequency())) {
-                    int startMonth = now.getMonthValue() <= 6 ? 1 : 7;
-                    effectiveSpent = eligibleTxns.stream()
-                        .filter(t -> t.getDate().getYear() == now.getYear())
-                        .filter(t -> {
-                            int m = t.getDate().getMonthValue();
-                            return (startMonth == 1) ? (m >= 1 && m <= 6) : (m >= 7 && m <= 12);
-                        })
-                        .mapToDouble(TransactionRecords::getAmount).sum();
-                } else {
-                    effectiveSpent = eligibleTxns.stream().mapToDouble(TransactionRecords::getAmount).sum();
-                }
+                double baseAmount = calculateWindowedAmount(eligibleTxns, rule, openMonth, now);
+                
+                effectiveValue = (rule.getRewardRate() != null && rule.getRewardRate() > 0) 
+                                 ? baseAmount * rule.getRewardRate() 
+                                 : baseAmount;
             }
 
-            double target = (rule.getTotalAmount() != null) ? rule.getTotalAmount() : 0.0;
-
-            if (rule.getPerPeriodAmount() != null) {
-                if ("MONTHLY".equalsIgnoreCase(rule.getFrequency())) {
-                    target = (now.getMonth() == Month.DECEMBER && rule.getDecemberAmount() != null) 
-                             ? rule.getDecemberAmount() : rule.getPerPeriodAmount();
-                } else if ("BI_ANNUALLY".equalsIgnoreCase(rule.getFrequency())) {
-                    target = rule.getPerPeriodAmount();
-                }
-            } else if ("BI_ANNUALLY".equalsIgnoreCase(rule.getFrequency()) && rule.getTotalAmount() != null) {
-                target = rule.getTotalAmount() / 2;
-            }
-
-            dto.setUsedAmount(effectiveSpent);
+            double target = calculateTarget(rule, now);
+            dto.setUsedAmount(effectiveValue);
             
             if (target > 0) {
                 dto.setTotalAmount(target);
-                dto.setRemainingAmount(Math.max(0, target - effectiveSpent));
-                dto.setEligible(effectiveSpent >= target);
+                dto.setRemainingAmount(Math.max(0, target - effectiveValue));
+                dto.setEligible(effectiveValue >= target);
             } else {
                 dto.setTotalAmount(null);
                 dto.setRemainingAmount(0.0);
                 dto.setEligible(true);
             }
-
             return dto;
         }).collect(Collectors.toList());
     }
 
+    private double calculateWindowedAmount(List<TransactionRecords> txns, BankCardRewards rule, Month openMonth, LocalDate now) {
+        if ("calendar_year".equalsIgnoreCase(rule.getFrequency())) {
+            return txns.stream().filter(t -> t.getDate().getYear() == now.getYear()).mapToDouble(TransactionRecords::getAmount).sum();
+        } else if ("anniversary_year".equalsIgnoreCase(rule.getFrequency())) {
+            LocalDate anniversaryStart = calculateAnniversaryStartFromMonth(openMonth, now);
+            return txns.stream().filter(t -> !t.getDate().isBefore(anniversaryStart)).mapToDouble(TransactionRecords::getAmount).sum();
+        } else if ("MONTHLY".equalsIgnoreCase(rule.getFrequency())) {
+            return txns.stream().filter(t -> t.getDate().getMonth() == now.getMonth() && t.getDate().getYear() == now.getYear()).mapToDouble(TransactionRecords::getAmount).sum();
+        }
+        return txns.stream().mapToDouble(TransactionRecords::getAmount).sum();
+    }
+
+    private double calculateTarget(BankCardRewards rule, LocalDate now) {
+        double target = (rule.getTotalAmount() != null) ? rule.getTotalAmount() : 0.0;
+        if ("MONTHLY".equalsIgnoreCase(rule.getFrequency()) && rule.getPerPeriodAmount() != null) {
+            target = (now.getMonth() == Month.DECEMBER && rule.getDecemberAmount() != null) ? rule.getDecemberAmount() : rule.getPerPeriodAmount();
+        }
+        return target;
+    }
+
     private LocalDate calculateAnniversaryStartFromMonth(Month openMonth, LocalDate now) {
         LocalDate thisYearAnniversary = LocalDate.of(now.getYear(), openMonth.getValue(), 1);
-        if (thisYearAnniversary.isAfter(now)) {
-            return thisYearAnniversary.minusYears(1);
-        }
-        return thisYearAnniversary;
+        return thisYearAnniversary.isAfter(now) ? thisYearAnniversary.minusYears(1) : thisYearAnniversary;
     }
 }
