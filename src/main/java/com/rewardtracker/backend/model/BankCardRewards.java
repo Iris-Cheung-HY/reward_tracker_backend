@@ -42,6 +42,8 @@ public class BankCardRewards {
 
     private String calculationType;
 
+    private Long parentRewardId;
+
     public boolean isEligible(String transactionType) {
         if (transactionType == null || this.merchantType == null) return false;
         String tType = transactionType.toUpperCase();
@@ -116,6 +118,10 @@ public class BankCardRewards {
         return calculationType;
     }
 
+    public Long getParendRewardId() {
+        return parentRewardId;
+    }
+
     
 
     // Setter
@@ -173,5 +179,9 @@ public class BankCardRewards {
 
     public void setCalculationType(String calculationType) {
         this.calculationType = calculationType;
+    }
+
+    public void setParentRewardId(Long parentRewardId) {
+        this.parentRewardId = parentRewardId;
     }
 }
