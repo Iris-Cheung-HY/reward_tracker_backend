@@ -31,6 +31,10 @@ public class RewardsDTO {
             return "STATIC";
         }
 
+        if ("CREDIT".equalsIgnoreCase(this.type)) {
+            return "PROGRESS";
+        }
+
         String content = ((merchantType != null ? merchantType : "") + " " + 
                         (conditions != null ? conditions : "") + " " + 
                         (type != null ? type : "")).toLowerCase();

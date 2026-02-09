@@ -38,12 +38,15 @@ public class RewardsDTOService {
         LocalDate now = LocalDate.now();
         Month openMonth = userCard.getOpenMonth() != null ? userCard.getOpenMonth() : Month.JANUARY;
 
+        Map<String, List<BankCardRewards>> groupMap = rules.stream()
+            .filter(r -> extractGroupName(r.getConditions()) != null)
+            .collect(Collectors.groupingBy(r -> extractGroupName(r.getConditions())));
+
         Map<Long, Double> rawSpendMap = new HashMap<>();
         for (BankCardRewards rule : rules) {
-            double raw = getRawSpendForRule(rule, allTransactions, rules, openMonth, now);
+            double raw = getRawSpendForRule(rule, allTransactions, groupMap, openMonth, now);
             rawSpendMap.put(rule.getId(), raw);
         }
-
 
         double totalSpendInWindow = calculateWindowedAmount(allTransactions, new BankCardRewards(), openMonth, now);
 
@@ -57,47 +60,36 @@ public class RewardsDTOService {
             double target = calculateTarget(rule, now);
             double used = 0.0;
 
-
             if ("TIME".equalsIgnoreCase(rule.getCalculationType())) {
                 used = 1.0; 
                 dto.setTotalAmount(null);
                 dto.setEligible(true);
             } 
-
             else {
-
                 if ("CREDIT".equalsIgnoreCase(rule.getType())) {
                     double rawSpend = rawSpendMap.getOrDefault(rule.getId(), 0.0);
                     used = Math.min(rawSpend, target); 
                     dto.setTotalAmount(target);
                     dto.setEligible(used >= target);
                 } 
-
                 else if ("MILESTONE".equalsIgnoreCase(rule.getType())) {
                     used = rawSpendMap.getOrDefault(rule.getId(), 0.0);
                     dto.setTotalAmount(target);
                     dto.setEligible(used >= target);
                 }
-
                 else if ("OTHERS".equalsIgnoreCase(rule.getMerchantType())) {
-
-                    double creditDeductions = rules.stream()
-                        .filter(r -> "CREDIT".equalsIgnoreCase(r.getType()))
+                    double deductions = rules.stream()
+                        .filter(r -> !"OTHERS".equalsIgnoreCase(r.getMerchantType()))
                         .mapToDouble(r -> {
                             double raw = rawSpendMap.getOrDefault(r.getId(), 0.0);
-                            return Math.min(raw, calculateTarget(r, now));
-                        })
-                        .sum();
+                            return "CREDIT".equalsIgnoreCase(r.getType()) ? 
+                                   Math.min(raw, calculateTarget(r, now)) : 
+                                   ("POINTS".equalsIgnoreCase(r.getType()) ? raw : 0.0);
+                        }).sum();
 
-                    double specialPointsSpend = rules.stream()
-                        .filter(r -> "POINTS".equalsIgnoreCase(r.getType()) && !"OTHERS".equalsIgnoreCase(r.getMerchantType()))
-                        .mapToDouble(r -> rawSpendMap.getOrDefault(r.getId(), 0.0))
-                        .sum();
-
-                    double finalBase = Math.max(0, totalSpendInWindow - creditDeductions - specialPointsSpend);
+                    double finalBase = Math.max(0, totalSpendInWindow - deductions);
                     used = (rule.getRewardRate() != null) ? 
                            Math.round(finalBase * rule.getRewardRate() * 100.0) / 100.0 : 0.0;
-                    
                     dto.setTotalAmount(null);
                     dto.setEligible(true);
                 }
@@ -114,34 +106,36 @@ public class RewardsDTOService {
 
             dto.setUsedAmount(used);
             dto.setRemainingAmount(dto.getTotalAmount() != null ? Math.max(0, dto.getTotalAmount() - used) : 0.0);
-            dto.setNextDueDate(calculateNextResetDate(rule, now));
+            dto.setNextDueDate(calculateNextResetDate(rule, userCard, now));
             dto.setTotalPeriods(rule.getPeriods());
 
             return dto;
         }).collect(Collectors.toList());
     }
 
-    private double getRawSpendForRule(BankCardRewards rule, List<TransactionRecords> allTransactions, List<BankCardRewards> rules, Month openMonth, LocalDate now) {
-        if ("MILESTONE".equalsIgnoreCase(rule.getType()) || 
-            "OTHERS".equalsIgnoreCase(rule.getMerchantType())) {
-            return calculateWindowedAmount(allTransactions, rule, openMonth, now);
+    private double getRawSpendForRule(BankCardRewards rule, List<TransactionRecords> txns, 
+                                     Map<String, List<BankCardRewards>> groupMap, 
+                                     Month openMonth, LocalDate now) {
+        
+        if ("MILESTONE".equalsIgnoreCase(rule.getType()) || "OTHERS".equalsIgnoreCase(rule.getMerchantType())) {
+            return calculateWindowedAmount(txns, rule, openMonth, now);
         }
 
         String groupName = extractGroupName(rule.getConditions());
         List<TransactionRecords> eligibleTxns;
 
-        if (groupName != null) {
-            eligibleTxns = allTransactions.stream()
-                .filter(t -> isTxnInGroup(t, rules, groupName))
+        if (groupName != null && groupMap.containsKey(groupName)) {
+            List<BankCardRewards> groupRules = groupMap.get(groupName);
+            eligibleTxns = txns.stream()
+                .filter(t -> groupRules.stream().anyMatch(r -> r.isEligible(t.getMerchantType())))
                 .collect(Collectors.toList());
         } else { 
-            eligibleTxns = allTransactions.stream()
+            eligibleTxns = txns.stream()
                 .filter(t -> rule.isEligible(t.getMerchantType()))
                 .collect(Collectors.toList());
         }
         return calculateWindowedAmount(eligibleTxns, rule, openMonth, now);
     }
-
 
     private String extractGroupName(String conditions) {
         if (conditions != null && conditions.contains("GROUP_")) {
@@ -152,15 +146,10 @@ public class RewardsDTOService {
         return null;
     }
 
-    private boolean isTxnInGroup(TransactionRecords t, List<BankCardRewards> allRules, String groupName) {
-        return allRules.stream()
-            .filter(r -> groupName.equals(extractGroupName(r.getConditions())))
-            .anyMatch(r -> r.isEligible(t.getMerchantType()));
-    }
-
     private double calculateWindowedAmount(List<TransactionRecords> txns, BankCardRewards rule, Month openMonth, LocalDate now) {
         String freq = (rule.getFrequency() != null) ? rule.getFrequency().toUpperCase() : "";
-        
+        if (txns == null || txns.isEmpty()) return 0.0;
+
         return txns.stream().filter(t -> {
             LocalDate d = t.getDate();
             if (d == null) return false;
@@ -171,9 +160,7 @@ public class RewardsDTOService {
                 case "QUARTERLY":
                     return (d.getMonthValue() - 1) / 3 == (now.getMonthValue() - 1) / 3 && d.getYear() == now.getYear();
                 case "SEMI_ANNUAL":
-                    boolean isFirstHalfNow = now.getMonthValue() <= 6;
-                    boolean isFirstHalfTxn = d.getMonthValue() <= 6;
-                    return (isFirstHalfNow == isFirstHalfTxn) && d.getYear() == now.getYear();
+                    return (now.getMonthValue() <= 6 == d.getMonthValue() <= 6) && d.getYear() == now.getYear();
                 case "ANNUAL":
                 case "CALENDAR_YEAR":
                     return d.getYear() == now.getYear();
@@ -187,16 +174,16 @@ public class RewardsDTOService {
     }
 
     private double calculateTarget(BankCardRewards rule, LocalDate now) {
-        String freq = rule.getFrequency() != null ? rule.getFrequency() : "";
-        if ("MONTHLY".equalsIgnoreCase(freq) && now.getMonth() == Month.DECEMBER) {
+        if (rule == null) return 0.0;
+        if ("MONTHLY".equalsIgnoreCase(rule.getFrequency()) && now.getMonth() == Month.DECEMBER) {
             if (rule.getDecemberAmount() != null) return rule.getDecemberAmount();
         }
         if (rule.getPerPeriodAmount() != null) return rule.getPerPeriodAmount();
         return rule.getTotalAmount() != null ? rule.getTotalAmount() : 0.0;
     }
 
-    private LocalDate calculateNextResetDate(BankCardRewards rule, LocalDate now) {
-        String freq = rule.getFrequency() != null ? rule.getFrequency().toUpperCase() : "";
+    private LocalDate calculateNextResetDate(BankCardRewards rule, UserCreditCard userCard, LocalDate now) {
+        String freq = (rule.getFrequency() != null) ? rule.getFrequency().toUpperCase() : "";
         switch (freq) {
             case "MONTHLY":
                 return now.with(TemporalAdjusters.lastDayOfMonth());
@@ -208,6 +195,9 @@ public class RewardsDTOService {
             case "ANNUAL":
             case "CALENDAR_YEAR":
                 return LocalDate.of(now.getYear(), 12, 31);
+            case "ANNIVERSARY_YEAR":
+                Month m = userCard.getOpenMonth() != null ? userCard.getOpenMonth() : Month.JANUARY;
+                return calculateAnniversaryStart(m, now).plusYears(1).minusDays(1);
             default:
                 return null;
         }
