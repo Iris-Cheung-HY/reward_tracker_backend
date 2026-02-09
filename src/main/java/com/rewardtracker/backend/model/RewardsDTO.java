@@ -28,6 +28,22 @@ public class RewardsDTO {
 
     private String conditions;
 
+    public String getDisplayMode() {
+        if (totalAmount == null || totalAmount <= 0) {
+            return "STATIC";
+        }
+        String content = (merchantType + " " + conditions + " " + type).toLowerCase();
+        if (content.contains("status") || 
+            content.contains("membership") || 
+            content.contains("benefit") ||
+            content.contains("automatic") ||
+            content.contains("no foreign")) {
+            return "STATIC";
+        }
+
+        return "PROGRESS";
+    }
+
     // Getter
     public String getMerchantType() { 
         return merchantType; 
