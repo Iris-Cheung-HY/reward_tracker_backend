@@ -2,6 +2,8 @@ package com.rewardtracker.backend.model;
 import jakarta.persistence.*;
 import java.util.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 
 public class BankCardRewards {
@@ -44,6 +46,7 @@ public class BankCardRewards {
         joinColumns = @JoinColumn(name = "reward_id"),
         inverseJoinColumns = @JoinColumn(name = "parent_id")
     )
+    @JsonIgnore
     private Set<BankCardRewards> parents = new HashSet<>();
 
     public boolean isEligible(String transactionType) {

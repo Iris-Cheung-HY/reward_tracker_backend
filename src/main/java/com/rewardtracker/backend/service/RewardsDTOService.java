@@ -28,6 +28,7 @@ public class RewardsDTOService {
 
     @Transactional(readOnly = true)
     public List<RewardsDTO> getCalculatedRewards(Long userCardId) {
+
         UserCreditCard userCard = userCreditCardRepository.findById(userCardId)
                 .orElseThrow(() -> new RuntimeException("Card not found"));
         Long bankCreditCardId = userCard.getBankCreditCard().getId();
@@ -62,7 +63,6 @@ public class RewardsDTOService {
                 used = rawSpendMap.getOrDefault(rule.getId(), 0.0);
             }
             else if ("POINTS".equalsIgnoreCase(rule.getType())) {
-
                 double rawSpend = rawSpendMap.getOrDefault(rule.getId(), 0.0);
                 double totalDeduction = 0.0;
 
@@ -101,7 +101,6 @@ public class RewardsDTOService {
         }).collect(Collectors.toList());
     }
 
-
     private double getRawSpendForRule(BankCardRewards rule, List<TransactionRecords> allTransactions, List<BankCardRewards> rules, Month openMonth, LocalDate now) {
         String groupName = extractGroupName(rule.getConditions());
         List<TransactionRecords> eligibleTxns;
@@ -115,7 +114,7 @@ public class RewardsDTOService {
             eligibleTxns = allTransactions.stream()
                 .filter(t -> !matchesAnySpecialRule(t, rules))
                 .collect(Collectors.toList());
-        } else {
+        } else { 
             eligibleTxns = allTransactions.stream()
                 .filter(t -> rule.isEligible(t.getMerchantType()))
                 .collect(Collectors.toList());
