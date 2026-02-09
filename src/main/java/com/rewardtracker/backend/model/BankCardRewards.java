@@ -1,10 +1,6 @@
 package com.rewardtracker.backend.model;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
+import java.util.*;
 
 @Entity
 
@@ -42,7 +38,13 @@ public class BankCardRewards {
 
     private String calculationType;
 
-    private Long parentRewardId;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "reward_relationships",
+        joinColumns = @JoinColumn(name = "reward_id"),
+        inverseJoinColumns = @JoinColumn(name = "parent_id")
+    )
+    private Set<BankCardRewards> parents = new HashSet<>();
 
     public boolean isEligible(String transactionType) {
         if (transactionType == null || this.merchantType == null) return false;
@@ -118,8 +120,8 @@ public class BankCardRewards {
         return calculationType;
     }
 
-    public Long getParendRewardId() {
-        return parentRewardId;
+    public Set<BankCardRewards> getParents() {
+        return this.parents;
     }
 
     
@@ -181,7 +183,7 @@ public class BankCardRewards {
         this.calculationType = calculationType;
     }
 
-    public void setParentRewardId(Long parentRewardId) {
-        this.parentRewardId = parentRewardId;
+    public void setParents(Set<BankCardRewards> parents) {
+        this.parents = parents;
     }
 }

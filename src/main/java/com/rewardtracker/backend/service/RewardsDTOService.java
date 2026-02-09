@@ -3,6 +3,7 @@ package com.rewardtracker.backend.service;
 import com.rewardtracker.backend.model.*;
 import com.rewardtracker.backend.repository.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -25,6 +26,7 @@ public class RewardsDTOService {
         this.userCreditCardRepository = userCreditCardRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<RewardsDTO> getCalculatedRewards(Long userCardId) {
         UserCreditCard userCard = userCreditCardRepository.findById(userCardId)
                 .orElseThrow(() -> new RuntimeException("Card not found"));
@@ -35,6 +37,12 @@ public class RewardsDTOService {
 
         LocalDate now = LocalDate.now();
         Month openMonth = userCard.getOpenMonth() != null ? userCard.getOpenMonth() : Month.JANUARY;
+
+        Map<Long, Double> rawSpendMap = new HashMap<>();
+        for (BankCardRewards rule : rules) {
+            double raw = getRawSpendForRule(rule, allTransactions, rules, openMonth, now);
+            rawSpendMap.put(rule.getId(), raw);
+        }
 
         return rules.stream().map(rule -> {
             RewardsDTO dto = new RewardsDTO();
@@ -50,34 +58,28 @@ public class RewardsDTOService {
                 LocalDate anniversaryDate = calculateAnniversaryStart(openMonth, now);
                 used = (!now.isBefore(anniversaryDate)) ? 1.0 : 0.0;
             } 
-
             else if ("MILESTONE".equalsIgnoreCase(rule.getType())) {
-                used = calculateWindowedAmount(allTransactions, rule, openMonth, now);
+                used = rawSpendMap.getOrDefault(rule.getId(), 0.0);
             }
+            else if ("POINTS".equalsIgnoreCase(rule.getType())) {
 
-            else {
-                String groupName = extractGroupName(rule.getConditions());
-                List<TransactionRecords> eligibleTxns;
+                double rawSpend = rawSpendMap.getOrDefault(rule.getId(), 0.0);
+                double totalDeduction = 0.0;
 
-                if (groupName != null) {
-                    eligibleTxns = allTransactions.stream()
-                        .filter(t -> isTxnInGroup(t, rules, groupName))
-                        .collect(Collectors.toList());
-                } 
-                else if ("OTHERS".equalsIgnoreCase(rule.getMerchantType())) {
-                    eligibleTxns = allTransactions.stream()
-                        .filter(t -> !matchesAnySpecialRule(t, rules))
-                        .collect(Collectors.toList());
-                } else {
-                    eligibleTxns = allTransactions.stream()
-                        .filter(t -> rule.isEligible(t.getMerchantType()))
-                        .collect(Collectors.toList());
+                if (rule.getParents() != null && !rule.getParents().isEmpty()) {
+                    for (BankCardRewards parent : rule.getParents()) {
+                        double parentRaw = rawSpendMap.getOrDefault(parent.getId(), 0.0);
+                        double parentTarget = calculateTarget(parent, now);
+                        totalDeduction += Math.min(parentRaw, parentTarget);
+                    }
                 }
-                used = calculateWindowedAmount(eligibleTxns, rule, openMonth, now);
-            }
 
-            if ("POINTS".equalsIgnoreCase(rule.getType()) && rule.getRewardRate() != null) {
-                used = Math.round(used * rule.getRewardRate() * 100.0) / 100.0;
+                double finalBase = Math.max(0, rawSpend - totalDeduction);
+                used = (rule.getRewardRate() != null) ? 
+                       Math.round(finalBase * rule.getRewardRate() * 100.0) / 100.0 : 0.0;
+            } 
+            else {
+                used = rawSpendMap.getOrDefault(rule.getId(), 0.0);
             }
 
             dto.setUsedAmount(used);
@@ -97,6 +99,28 @@ public class RewardsDTOService {
 
             return dto;
         }).collect(Collectors.toList());
+    }
+
+
+    private double getRawSpendForRule(BankCardRewards rule, List<TransactionRecords> allTransactions, List<BankCardRewards> rules, Month openMonth, LocalDate now) {
+        String groupName = extractGroupName(rule.getConditions());
+        List<TransactionRecords> eligibleTxns;
+
+        if (groupName != null) {
+            eligibleTxns = allTransactions.stream()
+                .filter(t -> isTxnInGroup(t, rules, groupName))
+                .collect(Collectors.toList());
+        } 
+        else if ("OTHERS".equalsIgnoreCase(rule.getMerchantType())) {
+            eligibleTxns = allTransactions.stream()
+                .filter(t -> !matchesAnySpecialRule(t, rules))
+                .collect(Collectors.toList());
+        } else {
+            eligibleTxns = allTransactions.stream()
+                .filter(t -> rule.isEligible(t.getMerchantType()))
+                .collect(Collectors.toList());
+        }
+        return calculateWindowedAmount(eligibleTxns, rule, openMonth, now);
     }
 
     private boolean matchesAnySpecialRule(TransactionRecords t, List<BankCardRewards> allRules) {
