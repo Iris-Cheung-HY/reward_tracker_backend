@@ -51,12 +51,14 @@ public class RewardsDTOServiceTest {
         monthlyUber.setPerPeriodAmount(10.0);
         monthlyUber.setFrequency("MONTHLY");
 
+
         BankCardRewards semiDell = new BankCardRewards();
         semiDell.setId(2L);
         semiDell.setMerchantType("DELL");
         semiDell.setType("CREDIT");
         semiDell.setPerPeriodAmount(50.0);
         semiDell.setFrequency("SEMI_ANNUAL");
+
 
         BankCardRewards annualLulu = new BankCardRewards();
         annualLulu.setId(3L);
@@ -65,11 +67,13 @@ public class RewardsDTOServiceTest {
         annualLulu.setPerPeriodAmount(75.0);
         annualLulu.setFrequency("ANNUAL");
 
+
         BankCardRewards diningPoints = new BankCardRewards();
         diningPoints.setId(4L);
         diningPoints.setMerchantType("DINING");
         diningPoints.setType("POINTS");
         diningPoints.setRewardRate(4.0);
+
 
         BankCardRewards othersPoints = new BankCardRewards();
         othersPoints.setId(5L);
@@ -77,13 +81,33 @@ public class RewardsDTOServiceTest {
         othersPoints.setType("POINTS");
         othersPoints.setRewardRate(2.0);
 
+
         BankCardRewards milestone = new BankCardRewards();
         milestone.setId(6L);
         milestone.setMerchantType("ALL_SPEND");
         milestone.setType("MILESTONE");
         milestone.setTotalAmount(75000.0);
 
-        List<BankCardRewards> rules = Arrays.asList(monthlyUber, semiDell, annualLulu, diningPoints, othersPoints, milestone);
+
+        BankCardRewards globalEntry = new BankCardRewards();
+        globalEntry.setId(7L);
+        globalEntry.setMerchantType("GLOBAL_ENTRY_CREDIT");
+        globalEntry.setCalculationType("TIME");
+        globalEntry.setType("BENEFIT");
+
+
+        BankCardRewards centurion = new BankCardRewards();
+        centurion.setId(8L);
+        centurion.setMerchantType("CENTURION_GUEST_ACCESS");
+        centurion.setType("MILESTONE");
+        centurion.setTotalAmount(75000.0);
+
+        List<BankCardRewards> rules = Arrays.asList(
+            monthlyUber, semiDell, annualLulu, 
+            diningPoints, othersPoints, milestone, 
+            globalEntry, centurion
+        );
+
 
         TransactionRecords t1 = new TransactionRecords();
         t1.setMerchantType("UBER"); t1.setAmount(15.0); t1.setDate(today);
@@ -103,23 +127,28 @@ public class RewardsDTOServiceTest {
         when(rewardsRepository.findByBankCreditCard_Id(100L)).thenReturn(rules);
         when(transactionRepository.findByUserCreditCardId(cardId)).thenReturn(transactions);
 
+
         List<RewardsDTO> results = rewardsDTOService.getCalculatedRewards(cardId);
 
 
-        assertEquals(10.0, find(results, "UBER").getUsedAmount(), "Uber Monthly Maximum $10");
-        assertEquals(50.0, find(results, "DELL").getUsedAmount(), "Dell Semi-Annual Maximum $50");
-        assertEquals(75.0, find(results, "LULULEMON").getUsedAmount(), "Lulu Annual Maximum $75");
+        assertEquals(10.0, find(results, "UBER").getUsedAmount(), "Uber Credit max $10");
+        assertEquals(50.0, find(results, "DELL").getUsedAmount(), "Dell Credit max $50");
+        assertEquals(75.0, find(results, "LULULEMON").getUsedAmount(), "Lulu Credit max $75");
+        assertEquals(400.0, find(results, "DINING").getUsedAmount(), "Dining 4x points on $100");
+        
+
+        assertEquals(280.0, find(results, "OTHERS").getUsedAmount(), "OTHERS points should be 280");
 
 
-        assertEquals(400.0, find(results, "DINING").getUsedAmount(), "Dining points= 400 點");
-
-        assertEquals(280.0, find(results, "OTHERS").getUsedAmount(), "OTHERS points = 280");
-
-
-        assertEquals(375.0, find(results, "ALL_SPEND").getUsedAmount(), "Milestone $375");
+        assertEquals(375.0, find(results, "ALL_SPEND").getUsedAmount(), "Milestone should track all spend");
+        assertEquals(1.0, find(results, "GLOBAL_ENTRY_CREDIT").getUsedAmount(), "Time benefit should be active (1.0)");
+        assertEquals(375.0, find(results, "CENTURION_GUEST_ACCESS").getUsedAmount(), "Secondary milestone should track all spend");
     }
 
     private RewardsDTO find(List<RewardsDTO> list, String merchantType) {
-        return list.stream().filter(d -> d.getMerchantType().equals(merchantType)).findFirst().orElseThrow();
+        return list.stream()
+            .filter(d -> d.getMerchantType().equals(merchantType))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Merchant type " + merchantType + " not found in results"));
     }
 }
