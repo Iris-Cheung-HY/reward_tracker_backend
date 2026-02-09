@@ -29,6 +29,10 @@ public class RewardsDTO {
     private String conditions;
 
     public String getDisplayMode() {
+
+        if ("MILESTONE".equalsIgnoreCase(this.type)) {
+            return "PROGRESS";
+        }
         if (totalAmount == null || totalAmount <= 0) {
             return "STATIC";
         }

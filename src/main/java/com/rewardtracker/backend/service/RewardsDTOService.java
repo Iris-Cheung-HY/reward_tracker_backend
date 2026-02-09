@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.temporal.TemporalAdjusters;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,20 +44,29 @@ public class RewardsDTOService {
             dto.setConditions(rule.getConditions());
 
             double target = calculateTarget(rule, now);
-
             double used;
-            boolean isStatusType = "TIME".equalsIgnoreCase(rule.getCalculationType());
 
-            if (isStatusType) {
+            if ("TIME".equalsIgnoreCase(rule.getCalculationType())) {
                 LocalDate anniversaryDate = calculateAnniversaryStart(openMonth, now);
                 used = (!now.isBefore(anniversaryDate)) ? 1.0 : 0.0;
-            } else {
+            } 
+
+            else if ("MILESTONE".equalsIgnoreCase(rule.getType())) {
+                used = calculateWindowedAmount(allTransactions, rule, openMonth, now);
+            }
+
+            else {
                 String groupName = extractGroupName(rule.getConditions());
                 List<TransactionRecords> eligibleTxns;
 
                 if (groupName != null) {
                     eligibleTxns = allTransactions.stream()
                         .filter(t -> isTxnInGroup(t, rules, groupName))
+                        .collect(Collectors.toList());
+                } 
+                else if ("OTHERS".equalsIgnoreCase(rule.getMerchantType())) {
+                    eligibleTxns = allTransactions.stream()
+                        .filter(t -> !matchesAnySpecialRule(t, rules))
                         .collect(Collectors.toList());
                 } else {
                     eligibleTxns = allTransactions.stream()
@@ -73,7 +82,7 @@ public class RewardsDTOService {
 
             dto.setUsedAmount(used);
 
-            if (isStatusType || target <= 1.0) {
+            if ("TIME".equalsIgnoreCase(rule.getCalculationType()) || target <= 0.0) {
                 dto.setTotalAmount(null);
                 dto.setRemainingAmount(0.0);
                 dto.setEligible(used >= 1.0);
@@ -88,6 +97,13 @@ public class RewardsDTOService {
 
             return dto;
         }).collect(Collectors.toList());
+    }
+
+    private boolean matchesAnySpecialRule(TransactionRecords t, List<BankCardRewards> allRules) {
+        return allRules.stream()
+            .filter(r -> !"OTHERS".equalsIgnoreCase(r.getMerchantType()))
+            .filter(r -> !"MILESTONE".equalsIgnoreCase(r.getType()))
+            .anyMatch(r -> r.isEligible(t.getMerchantType()));
     }
 
     private String extractGroupName(String conditions) {
@@ -106,7 +122,7 @@ public class RewardsDTOService {
     }
 
     private double calculateWindowedAmount(List<TransactionRecords> txns, BankCardRewards rule, Month openMonth, LocalDate now) {
-        String freq = rule.getFrequency() != null ? rule.getFrequency().toUpperCase() : "";
+        String freq = (rule.getFrequency() != null) ? rule.getFrequency().toUpperCase() : "";
         
         return txns.stream().filter(t -> {
             LocalDate d = t.getDate();
@@ -120,7 +136,7 @@ public class RewardsDTOService {
                 case "SEMI_ANNUAL":
                     boolean isFirstHalfNow = now.getMonthValue() <= 6;
                     boolean isFirstHalfTxn = d.getMonthValue() <= 6;
-                    return isFirstHalfNow == isFirstHalfTxn && d.getYear() == now.getYear();
+                    return (isFirstHalfNow == isFirstHalfTxn) && d.getYear() == now.getYear();
                 case "ANNUAL":
                 case "CALENDAR_YEAR":
                     return d.getYear() == now.getYear();
@@ -135,11 +151,9 @@ public class RewardsDTOService {
 
     private double calculateTarget(BankCardRewards rule, LocalDate now) {
         String freq = rule.getFrequency() != null ? rule.getFrequency() : "";
-        
         if ("MONTHLY".equalsIgnoreCase(freq) && now.getMonth() == Month.DECEMBER) {
             if (rule.getDecemberAmount() != null) return rule.getDecemberAmount();
         }
-        
         if (rule.getPerPeriodAmount() != null) return rule.getPerPeriodAmount();
         return rule.getTotalAmount() != null ? rule.getTotalAmount() : 0.0;
     }
