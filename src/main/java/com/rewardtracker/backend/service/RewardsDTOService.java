@@ -39,11 +39,13 @@ public class RewardsDTOService {
         LocalDate now = LocalDate.now();
         Month openMonth = userCard.getOpenMonth() != null ? userCard.getOpenMonth() : Month.JANUARY;
 
+
         Map<Long, Double> rawSpendMap = new HashMap<>();
         for (BankCardRewards rule : rules) {
             double raw = getRawSpendForRule(rule, allTransactions, rules, openMonth, now);
             rawSpendMap.put(rule.getId(), raw);
         }
+
 
         return rules.stream().map(rule -> {
             RewardsDTO dto = new RewardsDTO();
@@ -56,15 +58,41 @@ public class RewardsDTOService {
             double used;
 
 
-            if ("TIME".equalsIgnoreCase(rule.getCalculationType())) {
+            if ("TIME".equalsIgnoreCase(rule.getCalculationType()) || 
+                "MEMBERSHIP".equalsIgnoreCase(rule.getType()) || 
+                "BENEFIT".equalsIgnoreCase(rule.getType())) {
+                
                 LocalDate anniversaryDate = calculateAnniversaryStart(openMonth, now);
                 used = (!now.isBefore(anniversaryDate)) ? 1.0 : 0.0;
+                
+                dto.setTotalAmount(null); 
+                dto.setEligible(used >= 1.0);
             } 
 
             else if ("CREDIT".equalsIgnoreCase(rule.getType())) {
                 double rawSpend = rawSpendMap.getOrDefault(rule.getId(), 0.0);
                 used = Math.min(rawSpend, target); 
+                dto.setTotalAmount(target);
+                dto.setEligible(used >= target);
             }
+
+            else if ("OTHERS".equalsIgnoreCase(rule.getMerchantType())) {
+                double rawSpend = rawSpendMap.getOrDefault(rule.getId(), 0.0);
+                
+
+                double deductions = rules.stream()
+                    .filter(r -> "CREDIT".equalsIgnoreCase(r.getType()))
+                    .mapToDouble(r -> Math.min(rawSpendMap.getOrDefault(r.getId(), 0.0), calculateTarget(r, now)))
+                    .sum();
+
+                double finalBase = Math.max(0, rawSpend - deductions);
+                used = (rule.getRewardRate() != null) ? 
+                       Math.round(finalBase * rule.getRewardRate() * 100.0) / 100.0 : 0.0;
+                
+                dto.setTotalAmount(null);
+                dto.setEligible(true);
+            }
+
             else if ("POINTS".equalsIgnoreCase(rule.getType())) {
                 double rawSpend = rawSpendMap.getOrDefault(rule.getId(), 0.0);
                 double totalDeduction = 0.0;
@@ -80,24 +108,19 @@ public class RewardsDTOService {
                 double finalBase = Math.max(0, rawSpend - totalDeduction);
                 used = (rule.getRewardRate() != null) ? 
                        Math.round(finalBase * rule.getRewardRate() * 100.0) / 100.0 : 0.0;
+                
+                dto.setTotalAmount(null);
+                dto.setEligible(true);
             } 
 
             else {
                 used = rawSpendMap.getOrDefault(rule.getId(), 0.0);
+                dto.setTotalAmount(target > 0 ? target : null);
+                dto.setEligible(target > 0 ? used >= target : true);
             }
 
             dto.setUsedAmount(used);
-
-            if ("TIME".equalsIgnoreCase(rule.getCalculationType()) || target <= 0.0) {
-                dto.setTotalAmount(null);
-                dto.setRemainingAmount(0.0);
-                dto.setEligible(used >= 1.0);
-            } else {
-                dto.setTotalAmount(target);
-                dto.setRemainingAmount(Math.max(0, target - used));
-                dto.setEligible(used >= target);
-            }
-
+            dto.setRemainingAmount(dto.getTotalAmount() != null ? Math.max(0, dto.getTotalAmount() - used) : 0.0);
             dto.setNextDueDate(calculateNextResetDate(rule, now));
             dto.setTotalPeriods(rule.getPeriods());
 
