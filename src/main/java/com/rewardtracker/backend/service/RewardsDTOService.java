@@ -55,12 +55,15 @@ public class RewardsDTOService {
             double target = calculateTarget(rule, now);
             double used;
 
+
             if ("TIME".equalsIgnoreCase(rule.getCalculationType())) {
                 LocalDate anniversaryDate = calculateAnniversaryStart(openMonth, now);
                 used = (!now.isBefore(anniversaryDate)) ? 1.0 : 0.0;
             } 
-            else if ("MILESTONE".equalsIgnoreCase(rule.getType())) {
-                used = rawSpendMap.getOrDefault(rule.getId(), 0.0);
+
+            else if ("CREDIT".equalsIgnoreCase(rule.getType())) {
+                double rawSpend = rawSpendMap.getOrDefault(rule.getId(), 0.0);
+                used = Math.min(rawSpend, target); 
             }
             else if ("POINTS".equalsIgnoreCase(rule.getType())) {
                 double rawSpend = rawSpendMap.getOrDefault(rule.getId(), 0.0);
@@ -78,6 +81,7 @@ public class RewardsDTOService {
                 used = (rule.getRewardRate() != null) ? 
                        Math.round(finalBase * rule.getRewardRate() * 100.0) / 100.0 : 0.0;
             } 
+
             else {
                 used = rawSpendMap.getOrDefault(rule.getId(), 0.0);
             }
