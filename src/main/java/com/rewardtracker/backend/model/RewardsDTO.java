@@ -1,42 +1,40 @@
 package com.rewardtracker.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
 
 public class RewardsDTO {
 
     private String merchantType;
-
     private String type;
-
     private Double rewardRate;
-
     private Double totalAmount;
-
     private Double usedAmount;
-
     private Double remainingAmount;
-
     private Double lostAmount;
-
     private Integer totalPeriods;
-
     private Integer remainingPeriods;
-
     private LocalDate nextDueDate;
-
+    
+    @JsonProperty("eligible")
     private Boolean eligible; 
-
+    
     private String conditions;
 
+    @JsonProperty("displayMode")
     public String getDisplayMode() {
-
         if ("MILESTONE".equalsIgnoreCase(this.type)) {
             return "PROGRESS";
         }
+
         if (totalAmount == null || totalAmount <= 0) {
             return "STATIC";
         }
-        String content = (merchantType + " " + conditions + " " + type).toLowerCase();
+
+        String content = ((merchantType != null ? merchantType : "") + " " + 
+                        (conditions != null ? conditions : "") + " " + 
+                        (type != null ? type : "")).toLowerCase();
+                    
         if (content.contains("status") || 
             content.contains("membership") || 
             content.contains("benefit") ||
@@ -44,25 +42,25 @@ public class RewardsDTO {
             content.contains("no foreign")) {
             return "STATIC";
         }
-
         return "PROGRESS";
     }
 
-    // Getter
+    // --- Getters ---
+
     public String getMerchantType() { 
         return merchantType; 
     }
-
-    public String getType() {
-        return type;
+    
+    public String getType() { 
+        return type; 
     }
 
-    public Double getRewardRate() {
-        return rewardRate;
+    public Double getRewardRate() { 
+        return rewardRate; 
     }
 
     public Double getTotalAmount() { 
-        return totalAmount; 
+        return totalAmount;
     }
 
     public Double getUsedAmount() { 
@@ -93,21 +91,22 @@ public class RewardsDTO {
         return eligible; 
     }
 
-    public String getConditions() {
-        return conditions;
+    public String getConditions() { 
+        return conditions; 
     }
 
-    // Setter
-    public void setMerchantType (String merchantType) { 
+    // --- Setters ---
+
+    public void setMerchantType(String merchantType) { 
         this.merchantType = merchantType; 
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setType(String type) { 
+        this.type = type; 
     }
 
-    public void setRewardRate (Double rewardRate) {
-        this.rewardRate = rewardRate;
+    public void setRewardRate(Double rewardRate) { 
+        this.rewardRate = rewardRate; 
     }
 
     public void setTotalAmount(Double totalAmount) { 
@@ -121,7 +120,7 @@ public class RewardsDTO {
     public void setRemainingAmount(Double remainingAmount) { 
         this.remainingAmount = remainingAmount; 
     }
-
+    
     public void setLostAmount(Double lostAmount) { 
         this.lostAmount = lostAmount; 
     }
@@ -142,8 +141,8 @@ public class RewardsDTO {
         this.eligible = eligible; 
     }
 
-    public void setConditions(String conditions) {
-        this.conditions = conditions;
+    public void setConditions(String conditions) { 
+        this.conditions = conditions; 
     }
 
 }
