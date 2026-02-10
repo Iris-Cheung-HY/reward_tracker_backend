@@ -60,7 +60,6 @@ public class UserCreditCardService {
     Double total = userCreditCardRepository.getTotalAnnualFeeByUserId(userId);
         return (total != null) ? total : 0.0;
     }
-
     
 
 }

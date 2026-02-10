@@ -78,15 +78,16 @@ public class RewardsDTOService {
                     dto.setEligible(used >= target);
                 }
                 else if ("OTHERS".equalsIgnoreCase(rule.getMerchantType())) {
-                    double deductions = rules.stream()
-                        .filter(r -> !"OTHERS".equalsIgnoreCase(r.getMerchantType()))
-                        .mapToDouble(r -> {
-                            double raw = rawSpendMap.getOrDefault(r.getId(), 0.0);
-                            return "CREDIT".equalsIgnoreCase(r.getType()) ? 
-                                   Math.min(raw, calculateTarget(r, now)) : 
-                                   ("POINTS".equalsIgnoreCase(r.getType()) ? raw : 0.0);
-                        }).sum();
-
+                    double deductions = 0.0;
+                    for (BankCardRewards r : rules) {
+                        if ("OTHERS".equalsIgnoreCase(r.getMerchantType())) continue;
+                        double val = rawSpendMap.getOrDefault(r.getId(), 0.0);
+                        if ("CREDIT".equalsIgnoreCase(r.getType())) {
+                            deductions += Math.min(val, calculateTarget(r, now));
+                        } else if ("POINTS".equalsIgnoreCase(r.getType())) {
+                            deductions += val;
+                        }
+                    }
                     double finalBase = Math.max(0, totalSpendInWindow - deductions);
                     used = (rule.getRewardRate() != null) ? 
                            Math.round(finalBase * rule.getRewardRate() * 100.0) / 100.0 : 0.0;
