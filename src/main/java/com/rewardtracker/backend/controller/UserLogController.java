@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
-
 @CrossOrigin(origins = "https://reward-tracker-frontend.vercel.app")
 @RestController
 @RequestMapping("/users")
@@ -20,12 +19,25 @@ public class UserLogController {
         this.userLogService = userLogService;
     }
 
-    @PostMapping
-    UserLog newUser(@RequestBody UserLog newUser) {
-        
-        return userLogService.saveUser(newUser);
 
+    @PostMapping
+    public ResponseEntity<?> newUser(@RequestBody UserLog newUser) {
+        try {
+
+            Optional<UserLog> existingUser = userLogService.findByUsername(newUser.getUsername());
+            if (existingUser.isPresent()) {
+                return ResponseEntity.status(409).body("Username is already taken");
+            }
+            
+            UserLog savedUser = userLogService.saveUser(newUser);
+            return ResponseEntity.ok(savedUser);
+        } catch (Exception e) {
+
+            e.printStackTrace(); 
+            return ResponseEntity.status(500).body("Registration failed: " + e.getMessage());
+        }
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
@@ -39,6 +51,7 @@ public class UserLogController {
         }
 
         UserLog user = userOpt.get();
+
         if (!user.getPassword().equals(password)) {
             return ResponseEntity.status(401).body("Wrong password");
         }
@@ -49,8 +62,9 @@ public class UserLogController {
         response.put("token", "fake-jwt-for-demo");
         
         return ResponseEntity.ok(response);
-}
+    }
     
+
     @PostMapping("/check-username")
     public Map<String, Boolean> checkUsername(@RequestBody Map<String, String> request) {
         String username = request.get("username");
@@ -60,14 +74,19 @@ public class UserLogController {
         return response;
     }
 
+
     @GetMapping
-    List<UserLog> getAllUsers() {
+    public List<UserLog> getAllUsers() {
         return userLogService.getAllUsers();
     }
 
     @DeleteMapping("/{id}")
-    public void deleteUserById(@PathVariable Long id) {
-        userLogService.deleteUserById(id);
+    public ResponseEntity<?> deleteUserById(@PathVariable Long id) {
+        try {
+            userLogService.deleteUserById(id);
+            return ResponseEntity.ok("User deleted successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Delete failed");
+        }
     }
-
 }
