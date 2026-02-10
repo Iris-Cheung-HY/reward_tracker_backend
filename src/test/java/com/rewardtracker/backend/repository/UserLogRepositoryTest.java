@@ -2,7 +2,6 @@ package com.rewardtracker.backend.repository;
 
 
 import com.rewardtracker.backend.model.*;
-import com.rewardtracker.backend.repository.*;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +26,7 @@ public class UserLogRepositoryTest {
         UserLog user1 = new UserLog();
         user1.setUsername("iris01123");
         user1.setEmail("testiris@testiris123.com");
+        userLogRepository.save(user1);
 
         //Act
 
